@@ -16,10 +16,8 @@ if (isset($_GET['lang']) && $_GET['lang'] != "") {
 include_once("../templates/emmalang_$lang.php");
 header('Content-Type: text/html; charset='.$CHARSET);
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-
-<html>
+<!DOCTYPE html>
+<html lang="<?=$lang?>">
 
 <head>
     <title><?=$_TITLE?></title>
@@ -77,13 +75,13 @@ header('Content-Type: text/html; charset='.$CHARSET);
                         <td>
                             <form name="form1" action="createComp.php" method="post">
                                 <h1 class="categoriesheader">New competition</h1>
-                                <b>Competitions Name</b><br/>
-                                <input type="text" name="name" size="15"/><br/>
-                                <b>Organizer</b><br/>
-                                <input type="text" name="org" size="15"/><br/>
-                                <b>Date (format yyyy-mm-dd)</b><br/>
-                                <input type="text" name="date" size="15"/> (ex. 2008-02-03)<br/>
-                                <input type="submit" name="btnSubmit" value="Create"/>
+                                <b>Competitions Name</b><br>
+                                <input type="text" name="name" size="15"><br>
+                                <b>Organizer</b><br>
+                                <input type="text" name="org" size="15"><br>
+                                <b>Date (format yyyy-mm-dd)</b><br>
+                                <input type="text" name="date" size="15"> (ex. 2008-02-03)<br>
+                                <input type="submit" name="btnSubmit" value="Create">
                             </form>
                         </td>
                     </tr>
@@ -92,8 +90,8 @@ header('Content-Type: text/html; charset='.$CHARSET);
         </tr>
     </table>
 </div>
-<br/>
-<br/>
+<br>
+<br>
 
 </body>
 </html>

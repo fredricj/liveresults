@@ -13,9 +13,8 @@ header('Content-Type: text/html; charset='.$CHARSET);
 
 echo("<?xml version=\"1.0\" encoding=\"$CHARSET\" ?>\n");
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="<?=$lang?>">
 <head><title><?=$_TITLE?></title>
     <meta http-equiv="Content-Type" content="text/html;charset=<?=$CHARSET?>">
     <meta name="viewport" content="width=1200,initial-scale=1.0">
