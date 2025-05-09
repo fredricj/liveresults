@@ -3,28 +3,28 @@ $CHARSET = 'utf-8';
 
 class Emma
 {
-	public static $db_server = "127.0.0.1";
-	public static $db_database = "liveresultat";
-	public static $db_user = "liveresultat";
-	public static $db_pw = "web";
-	public static $MYSQL_CHARSET = "utf8mb4";
-	var $m_CompId;
+	public static string $db_server = "127.0.0.1";
+	public static string $db_database = "liveresultat";
+	public static string $db_user = "liveresultat";
+	public static string $db_pw = "web";
+	public static string $MYSQL_CHARSET = "utf8mb4";
+	var int $m_CompId;
 	
-	var $m_CompName;
+	var string $m_CompName;
 	
-	var $m_CompDate;
-	var $m_TimeDiff = 0;
-	var $m_IsMultiDayEvent = false;
-	var $m_MultiDayStage = -1;
-	var $m_MultiDayParent = -1;
+	var string $m_CompDate;
+	var int $m_TimeDiff = 0;
+	var bool $m_IsMultiDayEvent = false;
+	var int $m_MultiDayStage = -1;
+	var int $m_MultiDayParent = -1;
 	
-	var $m_VideoFormat = "";
-	var $m_VideoUrl = "";
-	var $m_TwitterFeed = "";
+	var string $m_VideoFormat = "";
+	var string $m_VideoUrl = "";
+	var ?string $m_TwitterFeed = "";
 	
-	var $m_Conn;
+	var ?mysqli $m_Conn;
 	
-	private static function openConnection()
+	private static function openConnection(): mysqli
 	{
 		$conn = mysqli_connect(self::$db_server, self::$db_user, self::$db_pw, self::$db_database);
 		if (mysqli_connect_errno()) {
@@ -35,8 +35,7 @@ class Emma
 		return $conn;
 	}
 	
-	public static function GetCompetitions()
-	
+	public static function GetCompetitions(): array
 	{
 		$conn = self::openConnection();
 		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from login where public = 1 order by compDate desc");
@@ -48,8 +47,7 @@ class Emma
 		return $ret;
 	}
 	
-	public static function GetCompetitionsToday()
-	
+	public static function GetCompetitionsToday(): array
 	{
 		$conn = self::openConnection();
 		$result = $conn->execute_query("select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from login where public = 1 and compDate = ?", [date("Y-m-d")]);
@@ -61,7 +59,7 @@ class Emma
 		return $ret;
 	}
 	
-	public static function GetRadioControls($compid)
+	public static function GetRadioControls($compid): array
 	{
 		$conn = self::openConnection();
 		$result = $conn->execute_query("select * from splitcontrols where tavid=? order by corder", [$compid]);
@@ -73,20 +71,20 @@ class Emma
 		return $ret;
 	}
 	
-	public static function DelRadioControl($compid, $code, $classname)
+	public static function DelRadioControl($compid, $code, $classname): void
 	{
 		$conn = self::openConnection();
 		$conn->execute_query("delete from splitcontrols where tavid=? and code=? and classname=?", [$compid, $code, $classname]);
 	}
 	
-	public static function DelAllRadioControls($compid)
+	public static function DelAllRadioControls($compid): void
 	{
 		$conn = self::openConnection();
 		$conn->execute_query("delete from splitcontrols where tavid=?", [$compid]);
 	}
 	
 	
-	public static function CreateCompetition($name, $org, $date)
+	public static function CreateCompetition($name, $org, $date): int
 	{
 		$conn = self::openConnection();
 		$res = mysqli_query($conn, "select max(tavid)+1 from login");
@@ -97,7 +95,7 @@ class Emma
 		$conn->execute_query("insert into login(tavid,user,pass,compName,organizer,compDate,public) values(?,?,?,?,?,?,0)", [$id, md5($name . $org . $date), md5("liveresultat"), $name, $org, $date]) or die(mysqli_error($conn));
 	}
 	
-	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country)
+	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country): int
 	{
 		$conn = self::openConnection();
 		$res = mysqli_query($conn, "select max(tavid)+1 from login");
@@ -110,8 +108,7 @@ class Emma
 	}
 	
 	
-	public static function AddRadioControl($compid, $classname, $name, $code)
-	
+	public static function AddRadioControl($compid, $classname, $name, $code): void
 	{
 		$conn = self::openConnection();
 		$res = $conn->execute_query("select count(*)+1 from splitcontrols where classname=? and tavid=?", [$classname, $compid]);
@@ -119,14 +116,14 @@ class Emma
 		$conn->execute_query( "insert into splitcontrols(tavid,classname,name,code,corder) values(?, ?, ?, ?, ?)", [$compid, $classname, $name, $code, $id]) or die(mysqli_error($conn));
 	}
 	
-	public static function UpdateCompetition($id, $name, $org, $date, $public, $timediff)
+	public static function UpdateCompetition($id, $name, $org, $date, $public, $timediff): void
 	{
 		$conn = self::openConnection();
 		$sql = "update login set compName = ?, organizer=?, compDate =?,timediff=?, public=? where tavid=?";
 		$conn->execute_query($sql, [$name, $org, $date, $timediff, (!isset($public) ? "0" : "1"), $id]) or die(mysqli_error($conn));
 	}
 	
-	public static function GetAllCompetitions()
+	public static function GetAllCompetitions(): array
 	{
 		$conn = self::openConnection();
 		$result = mysqli_query($conn, "select compName, compDate,tavid,timediff,organizer,public from login order by compDate desc");
@@ -138,7 +135,7 @@ class Emma
 		return $ret;
 	}
 	
-	public static function GetCompetition($compid)
+	public static function GetCompetition($compid): ?array
 	
 	{
 		$conn = self::openConnection();
@@ -178,22 +175,22 @@ class Emma
 		}
 	}
 	
-	function IsMultiDayEvent()
+	function IsMultiDayEvent(): bool
 	{
 		return $this->m_IsMultiDayEvent;
 	}
 	
-	function HasVideo()
+	function HasVideo(): bool
 	{
 		return $this->m_VideoFormat != "";
 	}
 	
-	function HasTwitter()
+	function HasTwitter(): bool
 	{
 		return $this->m_TwitterFeed != "";
 	}
 	
-	function GetVideoEmbedCode()
+	function GetVideoEmbedCode(): string
 	{
 		if ($this->m_VideoFormat == "bambuser") {
 			return '<iframe src="http://embed.bambuser.com/channel/'.$this->m_VideoUrl.'" width="460" height="403" frameborder="0">Your browser does not support iframes.</iframe>';
@@ -201,28 +198,28 @@ class Emma
 		return "";
 	}
 	
-	function GetTwitterFeed()
+	function GetTwitterFeed(): ?string
 	{
 		return $this->m_TwitterFeed;
 	}
 	
-	function CompName()
+	function CompName(): string
 	{
 		return $this->m_CompName;
 	}
 	
-	function CompDate()
+	function CompDate(): string
 	{
 		return $this->m_CompDate;
 	}
 	
-	function TimeZoneDiff()
+	function TimeZoneDiff(): float|int
 	{
 		return $this->m_TimeDiff / 3600;
 	}
 	
 	
-	function Classes()
+	function Classes(): array
 	{
 		$ret = array();
 		$result = $this->m_Conn->execute_query("SELECT Class From runners where TavId = ? Group By Class", [$this->m_CompId]);
@@ -236,7 +233,7 @@ class Emma
 		return $ret;
 	}
 	
-	function getAllSplitControls()
+	function getAllSplitControls(): array
 	{
 		$ret = array();
 		$result = $this->m_Conn->execute_query("SELECT code, name, classname, corder from splitcontrols where tavid = ? order by corder", [$this->m_CompId]);
@@ -252,7 +249,7 @@ class Emma
 	}
 	
 	
-	function getSplitControlsForClass($className)
+	function getSplitControlsForClass($className): array
 	{
 		$ret = array();
 		$result = $this->m_Conn->execute_query("SELECT code, name from splitcontrols where tavid = ? and classname = ? order by corder", [$this->m_CompId, $className]);
@@ -267,13 +264,13 @@ class Emma
 		return $ret;
 	}
 	
-	function getResultsForClass($className)
+	function getResultsForClass($className): ?array
 	{
 		return $this->getSplitsForClass($className, 1000);
 	}
 	
 	
-	function getLastPassings($num)
+	function getLastPassings($num): array
 	{
 		$ret = array();
 		$q = "SELECT runners.Name, runners.class, runners.Club, results.Time,results.Status,
@@ -300,7 +297,7 @@ class Emma
 		return $ret;
 	}
 	
-	function getSplitsForClass($className, $split)
+	function getSplitsForClass($className, $split): array
 	{
 		$ret = array();
 		$q = "SELECT runners.Name, runners.Club, results.Time,results.Status, results.Changed
@@ -320,7 +317,7 @@ class Emma
 		return $ret;
 	}
 	
-	function getClubResults($compId, $club)
+	function getClubResults($compId, $club): array
 	{
 		$ret = array();
 		$q = "SELECT runners.Name, runners.Club, results.Time, runners.Class ,results.Status, results.Changed, results.DbID, results.Control
@@ -363,7 +360,7 @@ class Emma
 		return $ret;
 	}
 	
-	function getAllSplitsForClass($className)
+	function getAllSplitsForClass($className): array
 	{
 		$ret = array();
 		$q = "SELECT runners.Name, runners.Club, results.Time ,results.Status, results.Changed, results.DbID, results.Control
@@ -412,7 +409,7 @@ class Emma
 		return $ret;
 	}
 	
-	function getTotalResultsForClass($className)
+	function getTotalResultsForClass($className): array
 	{
 		$ret = array();
 		$ar = array();
