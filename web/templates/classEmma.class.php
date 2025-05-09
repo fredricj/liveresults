@@ -89,25 +89,15 @@ class Emma
 	public static function CreateCompetition($name, $org, $date)
 	{
 		$conn = self::openConnection();
-		$res = mysqli_query($conn, "select max(tavid)+1 from competition");
-		list($id) = mysqli_fetch_row($res);
-		if ($id < 10000) {
-			$id = 10000;
-		}
-		mysqli_query($conn, "insert into competition(tavid,user,passhash,compName,organizer,compDate,public) values(".$id.",'".md5($name.$org.$date)."','".md5("liveresultat")."','".$name."','".$org."','".$date."',0)") or die(mysqli_error($conn));
+		mysqli_query($conn, "insert into competition(user,passhash,compName,organizer,compDate,public) values('" . md5($name . $org . $date) . "','" . md5("liveresultat") . "','" . $name . "','" . $org . "','" . $date . "',0)") or die(mysqli_error($conn));
+		return $conn->insert_id;
 	}
 	
 	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country)
 	{
 		$conn = self::openConnection();
-		$res = mysqli_query($conn, "select max(tavid)+1 from competition");
-		list($id) = mysqli_fetch_row($res);
-		if ($id < 10000) {
-			$id = 10000;
-		}
-		mysqli_query($conn, "insert into competition(tavid,user,passhash,compName,organizer,compDate,public, country) values(".$id.",'".$email."','".md5($password)."','".$name."','".$org."','".$date."',0,'".$country."')") or die(mysqli_error($conn));
-		return $id;
-	}
+		mysqli_query($conn, "insert into competition(user,passhash,compName,organizer,compDate,public, country) values('" . $email . "','" . md5($password) . "','" . $name . "','" . $org . "','" . $date . "',0,'" . $country . "')") or die(mysqli_error($conn));
+		return $conn->insert_id;	}
 	
 	
 	public static function AddRadioControl($compid, $classname, $name, $code)
