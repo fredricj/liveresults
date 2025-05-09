@@ -24,10 +24,8 @@ include_once("../templates/emmalang_$lang.php");
 header('Content-Type: text/html; charset='.$CHARSET);
 
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-
-<html>
+<!DOCTYPE html>
+<html lang="<?=$lang?>">
 
 <head><title><?=$_TITLE?></title>
 
@@ -111,24 +109,21 @@ header('Content-Type: text/html; charset='.$CHARSET);
                             <form name="form1" action="editComp.php?what=comp&compid=<?=$comp['tavid']?>"
                                   method="post">
                                 <h1 class="categoriesheader">Edit competition</h1>
-                                <b>CompetitionID</b><br/>
+                                <b>CompetitionID</b><br>
                                 <input type="text" name="id" size="35" disabled="true"
-                                       value="<?=$comp['tavid']?>"/><br/>
-                                <b>Competitions Name</b><br/>
-                                <input type="text" name="name" size="35" value="<?=$comp['compName']?>"/><br/>
-                                <b>Organizer</b><br/>
-                                <input type="text" name="org" size="35" value="<?=$comp['organizer']?>"/><br/>
-                                <b>Date (format yyyy-mm-dd)</b><br/>
-                                <input type="text" name="date" size="35"
-                                       value="<?=date("Y-m-d", strtotime($comp['compDate']))?>"/> (ex.
-                                2008-02-03)<br/>
-                                <b>Timezonediff (hours, +1 for finland, 0 for Sweden and -1 for GBR)</b><br/>
-                                <input type="text" name="timediff" size="10" value="<?=$comp['timediff']?>"/><br/>
-
-                                <b>Public</b><br/>
-                                <input type="checkbox" name="public" <?=$comp['public'] == 1 ? "checked" : ""?>/><br/><br/>
-                                <input type="submit" name="btnSave" value="Save"/>
-                            </form>
+                                       value="<?= $comp['tavid'] ?>"><br>
+                                <b>Competitions Name</b><br>
+                                <input type="text" name="name" size="35" value="<?= $comp['compName'] ?>"><br>
+                                <b>Organizer</b><br>
+                                <input type="text" name="org" size="35" value="<?= $comp['organizer'] ?>"><br>
+                                <b>Date (format yyyy-mm-dd)</b><br>                                <input type="text" name="date" size="35"
+                                       value="<?= date("Y-m-d", strtotime($comp['compDate'])) ?>"> (ex.
+                                2008-02-03)<br>
+                                <b>Timezonediff (hours, +1 for finland, 0 for Sweden and -1 for GBR)</b><br>
+                                <input type="text" name="timediff" size="10" value="<?= $comp['timediff'] ?>"><br>
+                                <b>Public</b><br>
+                                <input type="checkbox" name="public" <?= $comp['public'] == 1 ? "checked" : "" ?>><br><br>
+                                <input type="submit" name="btnSave" value="Save">                            </form>
                             <h1 class="categoriesheader">Radio Controls</h1>
 
                             <form name="formrdo1" action="editComp.php?what=radio&compid=<?=$comp['tavid']?>"
@@ -147,21 +142,21 @@ header('Content-Type: text/html; charset='.$CHARSET);
 									}
 									?>
                                 </table>
-                                <br/>
-                                <hr/>
+                                <br>
+                                <hr>
                                 <a href="javascript:confirmDelete('Do you want to delete ALL radiocontrols?','?compid=<?=$_GET['compid']?>&what=delallctr&compid=<?=$_GET['compid']?>');">Delete
                                     all radio controls</a>
-                                <br/>
-                                <hr/>
-                                <br/>
+                                <br>
+                                <hr>
+                                <br>
 
-                                <br/><b>Add Radio Control</b><br/>
-                                Code = 1000*passingcnt + controlCode, <br/>
-                                ex. first pass at control 53 => Code = 1053, second pass => Code = 2053<br/>
-                                Code: <input type="text" name="code"/><br/>
-                                Control-Name: <input type="text" name="controlname"/><br/>
-                                ClassName: <input type="text" name="classname"/><br/>
-                                <input type="submit" name="btnAdd" value="Add Control"/>
+                                <br><b>Add Radio Control</b><br>
+                                Code = 1000*passingcnt + controlCode, <br>
+                                ex. first pass at control 53 => Code = 1053, second pass => Code = 2053<br>
+                                Code: <input type="text" name="code"><br>
+                                Control-Name: <input type="text" name="controlname"><br>
+                                ClassName: <input type="text" name="classname"><br>
+                                <input type="submit" name="btnAdd" value="Add Control">
                             </form>
                         </td>
                     </tr>
@@ -170,7 +165,7 @@ header('Content-Type: text/html; charset='.$CHARSET);
         </tr>
     </table>
 </div>
-<br/>
-<br/>
+<br>
+<br>
 </body>
 </html>

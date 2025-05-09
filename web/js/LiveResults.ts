@@ -105,7 +105,7 @@
                             var param = value.className;
                             if (param && param.length > 0)
                                 param = param.replace('\'', '\\\'');
-                            str += "<a href=\"javascript:LiveResults.Instance.chooseClass('" + param + "')\">" + value.className + "</a><br/>";
+                            str += "<a href=\"javascript:LiveResults.Instance.chooseClass('" + param + "')\">" + value.className + "</a><br>";
                         }
                     );
                     str += "</nowrap>";
@@ -192,7 +192,7 @@
                             var cl = value["class"];
                             if (cl && cl.length > 0)
                                 cl = cl.replace('\'', '\\\'');
-                            str += value.passtime + ": " + value.runnerName + " (<a href=\"javascript:LiveResults.Instance.chooseClass('" + cl + "')\">" + value["class"] + "</a>) " + (value.control == 1000 ? this.resources["_LASTPASSFINISHED"] : this.resources["_LASTPASSPASSED"] + " " + value["controlName"]) + " " + this.resources["_LASTPASSWITHTIME"] + " " + value["time"] + "<br/>";
+                            str += value.passtime + ": " + value.runnerName + " (<a href=\"javascript:LiveResults.Instance.chooseClass('" + cl + "')\">" + value["class"] + "</a>) " + (value.control == 1000 ? this.resources["_LASTPASSFINISHED"] : this.resources["_LASTPASSPASSED"] + " " + value["controlName"]) + " " + this.resources["_LASTPASSWITHTIME"] + " " + value["time"] + "<br>";
                         }
                     );
                     $("#" + this.lastPassingsDiv).html(str);
@@ -389,7 +389,7 @@
                             
                             var link = "<a href=\"javascript:LiveResults.Instance.viewClubResults('" + param + "')\">" + o.aData.club + "</a>";
                             if (haveSplitControls)
-                                return o.aData.name + "<br/>" + link;
+                                return o.aData.name + "<br>" + link;
                             else
                                 return link;
                         }
@@ -443,7 +443,7 @@
                                             o.aData.splits[value.code + "_place"] +
                                             ")";
                                         if (o.aData.splits[value.code + "_timeplus"] != undefined) {
-                                            txt += "<br/><span class=\"plustime\">+" + this.formatTime(o.aData.splits[value.code + "_timeplus"], 0, this.showTenthOfSecond) + "</span>";
+                                            txt += "<br><span class=\"plustime\">+" + this.formatTime(o.aData.splits[value.code + "_timeplus"], 0, this.showTenthOfSecond) + "</span>";
                                         }
                                         return txt;
                                     }
@@ -471,7 +471,7 @@
                                 res = this.formatTime(o.aData.result, o.aData.status, this.showTenthOfSecond) + " (" + o.aData.place + ")";
                                 if (haveSplitControls) {
                                     if (o.aData.status == 0)
-                                        res += "<br/>" +
+                                        res += "<br>" +
                                             "<span class=\"plustime\">+" +
                                             this.formatTime(o.aData.timeplus, o.aData.status, this.showTenthOfSecond) +
                                             "</span>";
@@ -521,7 +521,7 @@
                                         ")";
 
                                     if (haveSplitControls) {
-                                        txt += "<br/><span class=\"plustime\">+" +
+                                        txt += "<br><span class=\"plustime\">+" +
                                             this.formatTime(o.aData.totalplus, o.aData.totalstatus) +
                                             "</span>";
                                     }
@@ -564,7 +564,7 @@
                         "aoColumnDefs": columns,
                         "fnPreDrawCallback": (oSettings : any) => {
                             if (oSettings.aaSorting[0][0] != col - 1) {
-                                $("#" + this.txtResetSorting).html("&nbsp;&nbsp;<a href=\"javascript:LiveResults.Instance.resetSorting()\"><img class=\"eR\" style=\"vertical-align: middle\" src=\"images/cleardot.gif\" border=\"0\"/> " + this.resources["_RESETTODEFAULT"] + "</a>");
+                                $("#" + this.txtResetSorting).html("&nbsp;&nbsp;<a href=\"javascript:LiveResults.Instance.resetSorting()\"><img class=\"eR\" style=\"vertical-align: middle\" src=\"images/cleardot.gif\" border=\"0\"> " + this.resources["_RESETTODEFAULT"] + "</a>");
                             }
                         },
                         "fnRowCallback": (nRow : any, aData : any, iDisplayIndex : number, iDisplayIndexFull :  number) => {
@@ -981,7 +981,7 @@
                         "aoColumnDefs": columns,
                         "fnPreDrawCallback":  (oSettings : any) => {
                             if (oSettings.aaSorting[0][0] != 1) {
-                                $("#" + this.txtResetSorting).html("&nbsp;&nbsp;<a href=\"javascript:LiveResults.Instance.resetSorting()\"><img class=\"eR\" style=\"vertical-align: middle\" src=\"images/cleardot.gif\" border=\"0\"/> " + this.resources["_RESETTODEFAULT"] + "</a>");
+                                $("#" + this.txtResetSorting).html("&nbsp;&nbsp;<a href=\"javascript:LiveResults.Instance.resetSorting()\"><img class=\"eR\" style=\"vertical-align: middle\" src=\"images/cleardot.gif\" border=\"0\"> " + this.resources["_RESETTODEFAULT"] + "</a>");
                             }
                         },
                         "bDestroy": true

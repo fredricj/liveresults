@@ -34,9 +34,8 @@ $showTimePrediction = true;
 
 echo("<?xml version=\"1.0\" encoding=\"$CHARSET\" ?>\n");
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="<?=$lang?>">
 <head><title><?=$_TITLE?> :: <?=$currentComp->CompName()?> [<?=$currentComp->CompDate()?>]</title>
 
     <META HTTP-EQUIV="expires" CONTENT="-1">
@@ -315,7 +314,7 @@ echo("<?xml version=\"1.0\" encoding=\"$CHARSET\" ?>\n");
 									?>
                                     <script type="text/javascript">
                                         if (!window.mobilecheck()) {
-                                            document.write('<a href="#" onclick="removeTwitter()">Remove Twitterfeed</a><br/>');
+                                            document.write('<a href="#" onclick="removeTwitter()">Remove Twitterfeed</a><br>');
 //document.write('<a class="twitter-timeline" href="https://twitter.com/tunapeter/lists/ol-liveresults?widgetId=591685055564636161&amp;chrome=noheader&amp;width=400">Related Tweets</a>');
                                             document.write('<a class="twitter-timeline" href="<?=$currentComp->GetTwitterFeed()?>&amp;chrome=noheader&amp;width=400">Related Tweets</a>');
                                             document.write("<script type=\"text/javascript\">!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+\"://platform.twitter.com/widgets.js\";fjs.parentNode.insertBefore(js,fjs);}}(document,\"script\",\"twitter-wjs\");");

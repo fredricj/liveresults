@@ -13,12 +13,9 @@ if (isset($_GET['lang']) && $_GET['lang'] != "") {
 include_once("../templates/emmalang_$lang.php");
 
 header('Content-Type: text/html; charset='.$CHARSET);
-
-
 ?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-        "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="<?=$lang?>">
 <head><title><?=$_TITLE?></title>
     <meta http-equiv="Content-Type" content="text/html;charset=<?=$CHARSET?>">
     <meta name="robots" content="noindex">
@@ -71,7 +68,7 @@ header('Content-Type: text/html; charset='.$CHARSET);
                 <table border="0" cellpadding="0" cellspacing="0">
                     <tr>
                         <td>
-                            <a href="createComp.php">Create new competition</a><br/>
+                            <a href="createComp.php">Create new competition</a><br>
                             <h1 class="categoriesheader">Existing competitions</h1>
                             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                                 <tr>
@@ -103,6 +100,6 @@ header('Content-Type: text/html; charset='.$CHARSET);
         </tr>
     </table>
 </div>
-<br/><br/>
+<br><br>
 </body>
 </html>
