@@ -7,7 +7,7 @@ class Emma
 	public static $db_database = "liveresultat";
 	public static $db_user = "liveresultat";
 	public static $db_pw = "web";
-	public static $MYSQL_CHARSET = "utf8";
+	public static $MYSQL_CHARSET = "utf8mb4";
 	var $m_CompId;
 	
 	var $m_CompName;
@@ -39,7 +39,7 @@ class Emma
 	
 	{
 		$conn = self::openConnection();
-		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from login where public = 1 order by compDate desc");
+		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from competition where public = 1 order by compDate desc");
 		$ret = array();
 		while ($tmp = mysqli_fetch_array($result)) {
 			$ret[] = $tmp;
@@ -52,7 +52,7 @@ class Emma
 	
 	{
 		$conn = self::openConnection();
-		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from login where public = 1 and compDate = '".date("Y-m-d")."'");
+		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,timediff,multidaystage,multidayparent from competition where public = 1 and compDate = '".date("Y-m-d")."'");
 		$ret = array();
 		while ($tmp = mysqli_fetch_array($result)) {
 			$ret[] = $tmp;
@@ -89,23 +89,23 @@ class Emma
 	public static function CreateCompetition($name, $org, $date)
 	{
 		$conn = self::openConnection();
-		$res = mysqli_query($conn, "select max(tavid)+1 from login");
+		$res = mysqli_query($conn, "select max(tavid)+1 from competition");
 		list($id) = mysqli_fetch_row($res);
 		if ($id < 10000) {
 			$id = 10000;
 		}
-		mysqli_query($conn, "insert into login(tavid,user,pass,compName,organizer,compDate,public) values(".$id.",'".md5($name.$org.$date)."','".md5("liveresultat")."','".$name."','".$org."','".$date."',0)") or die(mysqli_error($conn));
+		mysqli_query($conn, "insert into competition(tavid,user,passhash,compName,organizer,compDate,public) values(".$id.",'".md5($name.$org.$date)."','".md5("liveresultat")."','".$name."','".$org."','".$date."',0)") or die(mysqli_error($conn));
 	}
 	
 	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country)
 	{
 		$conn = self::openConnection();
-		$res = mysqli_query($conn, "select max(tavid)+1 from login");
+		$res = mysqli_query($conn, "select max(tavid)+1 from competition");
 		list($id) = mysqli_fetch_row($res);
 		if ($id < 10000) {
 			$id = 10000;
 		}
-		mysqli_query($conn, "insert into login(tavid,user,pass,compName,organizer,compDate,public, country) values(".$id.",'".$email."','".md5($password)."','".$name."','".$org."','".$date."',0,'".$country."')") or die(mysqli_error($conn));
+		mysqli_query($conn, "insert into competition(tavid,user,passhash,compName,organizer,compDate,public, country) values(".$id.",'".$email."','".md5($password)."','".$name."','".$org."','".$date."',0,'".$country."')") or die(mysqli_error($conn));
 		return $id;
 	}
 	
@@ -122,14 +122,14 @@ class Emma
 	public static function UpdateCompetition($id, $name, $org, $date, $public, $timediff)
 	{
 		$conn = self::openConnection();
-		$sql = "update login set compName = '$name', organizer='$org', compDate ='$date',timediff=$timediff, public=".(!isset($public) ? "0" : "1")." where tavid=$id";
+		$sql = "update competition set compName = '$name', organizer='$org', compDate ='$date',timediff=$timediff, public=".(!isset($public) ? "0" : "1")." where tavid=$id";
 		mysqli_query($conn, $sql) or die(mysqli_error($conn));
 	}
 	
 	public static function GetAllCompetitions()
 	{
 		$conn = self::openConnection();
-		$result = mysqli_query($conn, "select compName, compDate,tavid,timediff,organizer,public from login order by compDate desc");
+		$result = mysqli_query($conn, "select compName, compDate,tavid,timediff,organizer,public from competition order by compDate desc");
 		$ret = array();
 		while ($tmp = mysqli_fetch_array($result)) {
 			$ret[] = $tmp;
@@ -142,7 +142,7 @@ class Emma
 	
 	{
 		$conn = self::openConnection();
-		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,public,timediff, timezone, videourl, videotype,multidaystage,multidayparent from login where tavid=$compid");
+		$result = mysqli_query($conn, "select compName, compDate,tavid,organizer,public,timediff, timezone, videourl, videotype,multidaystage,multidayparent from competition where tavid=$compid");
 		$ret = null;
 		while ($tmp = mysqli_fetch_array($result)) {
 			$ret = $tmp;
@@ -157,7 +157,7 @@ class Emma
 	{
 		$this->m_CompId = $compID;
 		$this->m_Conn = self::openConnection();
-		$result = mysqli_query($this->m_Conn, "select * from login where tavid = $compID");
+		$result = mysqli_query($this->m_Conn, "select * from competition where tavid = $compID");
 		if ($tmp = mysqli_fetch_array($result)) {
 			$this->m_CompName = $tmp["compName"];
 			$this->m_CompDate = date("Y-m-d", strtotime($tmp["compDate"]));
@@ -402,7 +402,7 @@ class Emma
 		if ($this->m_MultiDayParent == -1) {
 			$comps = "(".$this->m_CompId.")";
 		} else {
-			$q = "Select TavId,multidaystage from login where MultiDayParent = ".$this->m_MultiDayParent." and MultiDayStage <=".$this->m_MultiDayStage." order by multidaystage";
+			$q = "Select TavId,multidaystage from competition where MultiDayParent = ".$this->m_MultiDayParent." and MultiDayStage <=".$this->m_MultiDayStage." order by multidaystage";
 			$comps = "(";
 			if ($result = mysqli_query($this->m_Conn, $q)) {
 				$f = 1;
