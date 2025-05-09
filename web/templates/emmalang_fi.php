@@ -58,4 +58,3 @@ $_CLASS = "Sarja";
 $_ORGANIZER = "Järjestäjä";
 $_DATE = "Päivämäärä";
 $_EVENTNAME = "Nimi";
-?>

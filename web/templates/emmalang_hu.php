@@ -118,6 +118,3 @@ $_CLASS = "Kateg";
 $_ORGANIZER = "Rendezõ";
 $_DATE = "Dátum";
 $_EVENTNAME = "Név";
-
-
-?>

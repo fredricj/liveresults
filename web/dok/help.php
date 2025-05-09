@@ -7,4 +7,3 @@ if (isset($_GET['lang']) && file_exists('help_'.$_GET['lang'].".html"))
 }
 
 include "help_$lang.html";
-?>

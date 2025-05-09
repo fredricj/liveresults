@@ -112,5 +112,3 @@ $_CLASS = "Class";
 $_ORGANIZER = "Organizer";
 $_DATE = "Date";
 $_EVENTNAME = "Name";
-
-?>
