@@ -58,4 +58,3 @@ $_CLASS = "Escalão";
 $_ORGANIZER = "Organizador";
 $_DATE = "Data";
 $_EVENTNAME = "Nome";
-?>
