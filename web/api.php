@@ -510,6 +510,3 @@ function urlRawDecode($raw_url_encoded)
 	# Return decoded  raw url encoded data
 	return rawurldecode($raw_url_encoded);
 }
-
-
-?>

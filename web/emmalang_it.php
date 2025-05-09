@@ -66,5 +66,3 @@ $_CLASS = "Categoria";
 
 $_ORGANIZER = "Organizzatore";
 $_DATE="Data";
-
-?>
