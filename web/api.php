@@ -452,9 +452,7 @@ if ($_GET['method'] == 'getcompetitions') {
 		echo(",$br \"hash\": \"".$hash."\"}");
 	}
 } else {
-	$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-	header($protocol.' '. 400 .' Bad Request');
-	
+	http_response_code(400);
 	echo("{ \"status\": \"ERR\", \"message\": \"No method given\"}");
 }
 
