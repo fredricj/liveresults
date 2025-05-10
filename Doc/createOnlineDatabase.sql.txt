@@ -22,6 +22,7 @@ CREATE TABLE competition (
   `control` int NOT NULL DEFAULT '0',
   `time` int NOT NULL DEFAULT '0',
   `status` int DEFAULT '0',
+  `passingTime` DATETIME NULL DEFAULT NULL,
   `changed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`tavid`,`dbid`,`control`),
   KEY `Results_Indexd` (`tavid`,`status`,`time`),

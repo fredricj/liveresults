@@ -112,11 +112,11 @@ namespace LiveResults.Client
                 var ev = eventsToSimulate[0];
                 if (ev.Data.ControlCode == 1000)
                 {
-                    m_client.SetRunnerResult(ev.runner.ID, ev.Data.Time,ev.RunnerStatus);
+                    m_client.SetRunnerResult(ev.runner.ID, ev.Data.Time,ev.RunnerStatus, null);
                 }
                 else
                 {
-                    m_client.SetRunnerSplit(ev.runner.ID, ev.Data.ControlCode, ev.Data.Time);
+                    m_client.SetRunnerSplit(ev.runner.ID, ev.Data.ControlCode, ev.Data.Time, DateTime.MinValue);
                 }
                 eventsToSimulate.RemoveAt(0);
                 listBox1.DataSource = eventsToSimulate.Take(20).ToList();
@@ -175,11 +175,11 @@ namespace LiveResults.Client
                 var ev = eventsToSimulate[0];
                 if (ev.Data.ControlCode == 1000)
                 {
-                    m_client.SetRunnerResult(ev.runner.ID, ev.Data.Time, ev.RunnerStatus);
+                    m_client.SetRunnerResult(ev.runner.ID, ev.Data.Time, ev.RunnerStatus, null);
                 }
                 else
                 {
-                    m_client.SetRunnerSplit(ev.runner.ID, ev.Data.ControlCode, ev.Data.Time);
+                    m_client.SetRunnerSplit(ev.runner.ID, ev.Data.ControlCode, ev.Data.Time, DateTime.MinValue);
                 }
                 eventsToSimulate.RemoveAt(0);
                 listBox1.DataSource = eventsToSimulate.Take(20).ToList();

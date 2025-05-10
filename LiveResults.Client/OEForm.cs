@@ -241,18 +241,18 @@ namespace LiveResults.Client
                 if (newResult is RelayResult)
                 {
                     var rr = newResult as RelayResult;
-                    c.SetRunnerResult(newResult.ID, rr.OverallTime, rr.OverallStatus);
+                    c.SetRunnerResult(newResult.ID, rr.OverallTime, rr.OverallStatus, null);
                 }
                 else
                 {
-                    c.SetRunnerResult(newResult.ID, newResult.Time, newResult.Status);
+                    c.SetRunnerResult(newResult.ID, newResult.Time, newResult.Status, DateTime.MinValue);
                 }
 
                 if (newResult.SplitTimes != null)
                 {
                     foreach (ResultStruct r in newResult.SplitTimes)
                     {
-                        c.SetRunnerSplit(newResult.ID, r.ControlCode, r.Time);
+                        c.SetRunnerSplit(newResult.ID, r.ControlCode, r.Time, r.PassingTime);
                     }
                 }
 
