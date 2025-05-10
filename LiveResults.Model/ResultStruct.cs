@@ -11,5 +11,6 @@ namespace LiveResults.Model
         public int ControlCode;
         public int Time;
         public int Place;
+        public DateTime PassingTime;
     }
 }

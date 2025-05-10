@@ -104,7 +104,7 @@ namespace LiveResults.Client
 
                     int version = Convert.ToInt32(cmd.ExecuteScalar());
 
-                    string baseCommand = "select results.bibNumber, results.individualCourseId, results.rawDataFromElectronicPunchingCardsId, results.modifyDate, results.totalTime, results.position, persons.familyname as lastname, persons.firstname as firstname, organisations.shortname as clubname, eventclasses.shortName, results.runnerStatus, results.entryid, results.allocatedStartTime, results.starttime, entries.allocationControl, entries.allocationEntryId from results, entries, Persons, organisations, raceclasses,eventclasses where raceclasses.eventClassID = eventClasses.eventClassID and results.raceClassID = raceclasses.raceclassid and raceClasses.eventRaceId = " + m_eventRaceId + " and eventclasses.eventid = " + m_eventID + " and results.entryid = entries.entryid and entries.competitorid = persons.personid and persons.defaultorganisationid = organisations.organisationid and raceClasses.raceClassStatus <> 'notUsed' and results.modifyDate > " + paramOper;
+                    string baseCommand = "select results.bibNumber, results.individualCourseId, results.rawDataFromElectronicPunchingCardsId, results.modifyDate, results.totalTime, results.position, persons.familyname as lastname, persons.firstname as firstname, organisations.shortname as clubname, eventclasses.shortName, results.runnerStatus, results.entryid, results.allocatedStartTime, results.starttime, entries.allocationControl, entries.allocationEntryId, results.finishTime from results, entries, Persons, organisations, raceclasses,eventclasses where raceclasses.eventClassID = eventClasses.eventClassID and results.raceClassID = raceclasses.raceclassid and raceClasses.eventRaceId = " + m_eventRaceId + " and eventclasses.eventid = " + m_eventID + " and results.entryid = entries.entryid and entries.competitorid = persons.personid and persons.defaultorganisationid = organisations.organisationid and raceClasses.raceClassStatus <> 'notUsed' and results.modifyDate > " + paramOper;
                     string splitbaseCommand = "select splittimes.modifyDate, splittimes.passedTime, Controls.ID, results.bibNumber, results.entryid, results.allocatedStartTime, results.starttime, persons.familyname as lastname, persons.firstname as firstname, organisations.shortname as clubname, eventclasses.shortName, splittimes.passedCount,entries.allocationControl, entries.allocationEntryId from splittimes, results, SplitTimeControls, Controls, eventClasses, raceClasses, Persons, organisations, entries where splittimes.resultraceindividualnumber = results.resultid and SplitTimes.splitTimeControlID = SplitTimeControls.splitTimeControlID and SplitTimeControls.timingControl = Controls.controlid and Controls.eventRaceId = " + m_eventRaceId + " and raceclasses.eventClassID = eventClasses.eventClassID and results.raceClassID = raceclasses.raceclassid and raceClasses.eventRaceId = " + m_eventRaceId + " and eventclasses.eventid = " + m_eventID + " and results.entryid = entries.entryid and entries.competitorid = persons.personid and persons.defaultorganisationid = organisations.organisationid and raceClasses.raceClassStatus <> 'notUsed' and  splitTimes.modifyDate > " + paramOper;
 
                     if (version >= 564)
@@ -229,6 +229,7 @@ namespace LiveResults.Client
                             {
                                 int time = 0, runnerID = 0, iStartTime = 0;
                                 string famName = "", fName = "", club = "", classN = "", status = "", bib = null;
+                                DateTime? finishTime = null;
                                 
                                 try
                                 {
@@ -252,6 +253,12 @@ namespace LiveResults.Client
 
                                     if (reader["bibNumber"] != null && reader["bibNumber"] != DBNull.Value)
                                         bib = reader["bibNumber"] as string;
+                                    FireLogMsg(reader["finishTime"].ToString());
+                                    if (reader["finishTime"] != null && reader["finishTime"] != DBNull.Value)
+                                    {
+                                        finishTime = GetDbDateTime(reader, "finishTime");
+                                    }
+                                    FireLogMsg(finishTime.ToString());
 
                                     DateTime startTime = DateTime.MinValue;
 
@@ -346,7 +353,8 @@ namespace LiveResults.Client
                                             StartTime = iStartTime,
                                             Time = time,
                                             Status = rstatus,
-                                            bib = bib
+                                            bib = bib,
+                                            PassingTime = finishTime
                                         };
 
                                         CheckAndCreatePairRunner(isRelay, reader, runnerPairs, runnerID, res);
@@ -505,7 +513,8 @@ namespace LiveResults.Client
                                     var t = new ResultStruct{
                                         ControlCode = sCont + 1000*passedCount,
                                         ControlNo = 0,
-                                        Time = (int) time
+                                        Time = (int) time,
+                                        PassingTime = pTime
                                     };
                                     times.Add(t);
 
@@ -521,7 +530,7 @@ namespace LiveResults.Client
 
                                     if (isRelay)
                                     {
-                                        relayEventCache.SetTeamLegSplitResult(entryid, classn, club, bib, name, Convert.ToInt32(reader["relayLeg"].ToString()), (int)startTime.TimeOfDay.TotalSeconds * 100, sCont, (int)time, passedCount);
+                                        relayEventCache.SetTeamLegSplitResult(entryid, classn, club, bib, name, Convert.ToInt32(reader["relayLeg"].ToString()), (int)startTime.TimeOfDay.TotalSeconds * 100, sCont, (int)time, passedCount, pTime);
                                     }
                                     else
                                     {

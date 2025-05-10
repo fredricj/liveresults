@@ -417,7 +417,7 @@ class Emma
 	function getAllSplitsForClass($className): array
 	{
 		$ret = array();
-		$q = "SELECT runners.Name, runners.Club, results.Time ,results.Status, results.Changed, results.DbID, results.Control
+		$q = "SELECT runners.Name, runners.Club, results.Time ,results.Status, results.Changed, results.DbID, results.Control, results.passingTime
 					FROM runners
 					JOIN results USING (dbid, tavid)
 					WHERE runners.TavId = ? AND runners.Class = ? ORDER BY results.Dbid";
@@ -438,12 +438,14 @@ class Emma
 					$ret[$dbId]["Time"] = $row['Time'];
 					$ret[$dbId]["Status"] = $row['Status'];
 					$ret[$dbId]["Changed"] = $row['Changed'];
+					$ret[$dbId]["FinishTime"] = $row['passingTime'];
 				} elseif ($split == 100) {
 					$ret[$dbId]["start"] = $row['Time'];
 				} else {
 					$ret[$dbId][$split."_time"] = $row['Time'];
 					$ret[$dbId][$split."_status"] = $row['Status'];
 					$ret[$dbId][$split."_changed"] = $row['Changed'];
+					$ret[$dbId][$split . "_passing"] = $row['passingTime'];
 				}
 			}
 			mysqli_free_result($result);
@@ -593,11 +595,11 @@ class Emma
 		}
 	}
 	
-	public static function UpdateRunnerResults(int $compid, int $dbid, string $time, int $code, int $status): void
+	public static function UpdateRunnerResults(int $compid, int $dbid, string $time, int $code, int $status, ?string $passingTime): void
 	{
 		$conn = self::openConnection();
-		$q = "REPLACE INTO results (tavid,dbid,control,time,status,changed) VALUES(?,?,?,?,?,Now())";
-		$conn->execute_query($q, [$compid, $dbid, $code, $time, $status]);
+		$q = "REPLACE INTO results (tavid,dbid,control,time,status,changed,passingTime) VALUES(?,?,?,?,?,Now(),?)";
+		$conn->execute_query($q, [$compid, $dbid, $code, $time, $status, $passingTime]);
 	}
 	
 }

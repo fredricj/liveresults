@@ -290,7 +290,7 @@ namespace LiveResults.Model
 
 
 
-                cmd.CommandText = "select runners.dbid,control,time,name,club,class,status,bib from runners, results where results.dbid = runners.dbid and results.tavid = " + m_compID + " and runners.tavid = " + m_compID;
+                cmd.CommandText = "select runners.dbid,control,time,name,club,class,status,bib,passingTime from runners, results where results.dbid = runners.dbid and results.tavid = " + m_compID + " and runners.tavid = " + m_compID;
                 reader = cmd.ExecuteReader();
                 while (reader.Read())
                 {
@@ -298,6 +298,13 @@ namespace LiveResults.Model
                     var control = Convert.ToInt32(reader["control"]);
                     var time = Convert.ToInt32(reader["time"]);
                     var bib = reader["bib"] as string;
+                    DateTime? passingTime;
+                    try
+                    {
+                        passingTime = Convert.ToDateTime(reader["passingTime"]);
+                    } catch (FormatException) {
+                        passingTime = null;
+                    }
                     var sourceId = idToAliasDictionary.ContainsKey(dbid) ? idToAliasDictionary[dbid] : null;
                     if (!IsRunnerAdded(dbid))
                     {
@@ -305,10 +312,10 @@ namespace LiveResults.Model
                         AddRunner(r);
                         numRunners++;
                     }
-                switch (control)
+                    switch (control)
                     {
                         case 1000:
-                            SetRunnerResult(dbid, time, Convert.ToInt32(reader["status"]));
+                            SetRunnerResult(dbid, time, Convert.ToInt32(reader["status"]), passingTime);
                             numResults++;
                             break;
                         case 100:
@@ -317,7 +324,7 @@ namespace LiveResults.Model
                             break;
                         default:
                             numResults++;
-                            SetRunnerSplit(dbid, control, time);
+                            SetRunnerSplit(dbid, control, time, passingTime == null ? DateTime.MinValue : passingTime.Value);
                             break;
                     }
 
@@ -482,7 +489,7 @@ namespace LiveResults.Model
         /// <param name="runnerID"></param>
         /// <param name="time"></param>
         /// <param name="status"></param>
-        public void SetRunnerResult(int runnerID, int time, int status)
+        public void SetRunnerResult(int runnerID, int time, int status, DateTime? passingTime)
         {
             if (!IsRunnerAdded(runnerID))
                 throw new ApplicationException("Runner is not added! {" + runnerID + "} [SetRunnerResult]");
@@ -491,7 +498,7 @@ namespace LiveResults.Model
 
             if (r.HasResultChanged(time, status))
             {
-                r.SetResult(time, status);
+                r.SetResult(time, status, passingTime);
                 m_itemsToUpdate.Add(r);
                 if (!m_currentlyBuffering)
                 {
@@ -501,7 +508,7 @@ namespace LiveResults.Model
             }
         }
 
-        public void SetRunnerSplit(int runnerID, int controlcode, int time)
+        public void SetRunnerSplit(int runnerID, int controlcode, int time, DateTime passingTime)
         {
             if (!IsRunnerAdded(runnerID))
                 throw new ApplicationException("Runner is not added! {" + runnerID + "} [SetRunnerResult]");
@@ -509,7 +516,7 @@ namespace LiveResults.Model
 
             if (r.HasSplitChanged(controlcode, time))
             {
-                r.SetSplitTime(controlcode, time);
+                r.SetSplitTime(controlcode, time, passingTime);
                 m_itemsToUpdate.Add(r);
                 if (!m_currentlyBuffering)
                 {
@@ -716,14 +723,14 @@ namespace LiveResults.Model
             if (runner.StartTime >= 0)
                 SetRunnerStartTime(runner.ID, runner.StartTime);
 
-            SetRunnerResult(runner.ID, runner.Time, runner.Status);
+            SetRunnerResult(runner.ID, runner.Time, runner.Status, runner.FinishTime);
 
             var spl = runner.SplitTimes;
             if (spl != null)
             {
                 foreach (var s in spl)
                 {
-                    SetRunnerSplit(runner.ID, s.Control, s.Time);
+                    SetRunnerSplit(runner.ID, s.Control, s.Time, s.PassingTime);
                 }
             }
         }
@@ -890,7 +897,8 @@ namespace LiveResults.Model
                                         cmd.Parameters.AddWithValue("?id", r.ID);
                                         cmd.Parameters.AddWithValue("?time", r.Time);
                                         cmd.Parameters.AddWithValue("?status", r.Status);
-                                        cmd.CommandText = "REPLACE INTO results (tavid,dbid,control,time,status,changed) VALUES(?compid,?id,1000,?time,?status,Now())";
+                                        cmd.Parameters.AddWithValue("?passingTime", r.FinishTime);
+                                        cmd.CommandText = "REPLACE INTO results (tavid,dbid,control,time,status,changed,passingTime) VALUES(?compid,?id,1000,?time,?status,Now(),?passingTime)";
                                         cmd.ExecuteNonQuery();
                                         cmd.Parameters.Clear();
 
@@ -919,12 +927,13 @@ namespace LiveResults.Model
                                         cmd.Parameters.AddWithValue("?id", r.ID);
                                         cmd.Parameters.AddWithValue("?control", -1);
                                         cmd.Parameters.AddWithValue("?time", -1);
+                                        cmd.Parameters.AddWithValue("?passingTime", -1);
                                         foreach (SplitTime t in splitTimes)
                                         {
                                             cmd.Parameters["?control"].Value = t.Control;
                                             cmd.Parameters["?time"].Value = t.Time;
-                                            cmd.CommandText = "REPLACE INTO results (tavid,dbid,control,time,status,changed) VALUES(" + m_compID + "," + r.ID + "," + t.Control + "," + t.Time +
-                                                              ",0,Now())";
+                                            cmd.Parameters["?passingTime"].Value = t.PassingTime;
+                                            cmd.CommandText = "REPLACE INTO results (tavid,dbid,control,time,status,changed) VALUES(?compid,?id,?control,?time,0,Now(),?passingTime)";
                                             cmd.ExecuteNonQuery();
                                             t.Updated = false;
                                             FireLogMsg("Runner " + r.Name + " splittime{" + t.Control + "} updated in DB");

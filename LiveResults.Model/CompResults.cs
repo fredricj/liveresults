@@ -16,5 +16,6 @@ namespace LiveResults.Model
         public string Classname { get; set; }
         public int Status { get; set; }
         public string Bib { get; set; }
+        public DateTime PassingTime { get; set; }
     }
 }

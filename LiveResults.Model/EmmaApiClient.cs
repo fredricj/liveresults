@@ -283,6 +283,7 @@ namespace LiveResults.Model
                     var control = reader.Control;
                     var time = reader.Time;
                     var bib = reader.Bib;
+                    DateTime? passingTime = reader.PassingTime;
                     var sourceId = idToAliasDictionary.ContainsKey(dbid) ? idToAliasDictionary[dbid] : null;
                     if (!IsRunnerAdded(dbid))
                     {
@@ -293,7 +294,7 @@ namespace LiveResults.Model
                     switch (control)
                     {
                         case 1000:
-                            SetRunnerResult(dbid, time, reader.Status);
+                            SetRunnerResult(dbid, time, reader.Status, passingTime);
                             numResults++;
                             break;
                         case 100:
@@ -302,7 +303,7 @@ namespace LiveResults.Model
                             break;
                         default:
                             numResults++;
-                            SetRunnerSplit(dbid, control, time);
+                            SetRunnerSplit(dbid, control, time, passingTime == null ? DateTime.MinValue : passingTime.Value);
                             break;
                     }
                 }
@@ -459,7 +460,7 @@ namespace LiveResults.Model
         /// <param name="runnerId"></param>
         /// <param name="time"></param>
         /// <param name="status"></param>
-        public void SetRunnerResult(int runnerId, int time, int status)
+        public void SetRunnerResult(int runnerId, int time, int status, DateTime? passingTime)
         {
             if (!IsRunnerAdded(runnerId))
                 throw new ApplicationException("Runner is not added! {" + runnerId + "} [SetRunnerResult]");
@@ -468,7 +469,7 @@ namespace LiveResults.Model
 
             if (r.HasResultChanged(time, status))
             {
-                r.SetResult(time, status);
+                r.SetResult(time, status, passingTime);
                 m_itemsToUpdate.Add(r);
                 if (!m_currentlyBuffering)
                 {
@@ -477,8 +478,8 @@ namespace LiveResults.Model
                 }
             }
         }
-
-        public void SetRunnerSplit(int runnerId, int controlcode, int time)
+        
+        public void SetRunnerSplit(int runnerId, int controlcode, int time, DateTime passingTime)
         {
             if (!IsRunnerAdded(runnerId))
                 throw new ApplicationException("Runner is not added! {" + runnerId + "} [SetRunnerResult]");
@@ -486,7 +487,7 @@ namespace LiveResults.Model
 
             if (r.HasSplitChanged(controlcode, time))
             {
-                r.SetSplitTime(controlcode, time);
+                r.SetSplitTime(controlcode, time, passingTime);
                 m_itemsToUpdate.Add(r);
                 if (!m_currentlyBuffering)
                 {
@@ -660,14 +661,14 @@ namespace LiveResults.Model
             if (runner.StartTime >= 0)
                 SetRunnerStartTime(runner.ID, runner.StartTime);
 
-            SetRunnerResult(runner.ID, runner.Time, runner.Status);
+            SetRunnerResult(runner.ID, runner.Time, runner.Status, runner.FinishTime);
 
             var spl = runner.SplitTimes;
             if (spl != null)
             {
                 foreach (var s in spl)
                 {
-                    SetRunnerSplit(runner.ID, s.Control, s.Time);
+                    SetRunnerSplit(runner.ID, s.Control, s.Time, s.PassingTime);
                 }
             }
         }
@@ -814,6 +815,7 @@ namespace LiveResults.Model
                                         new KeyValuePair<string, string>("dbid", Convert.ToString(r.ID)),
                                         new KeyValuePair<string, string>("time", Convert.ToString(r.Time)),
                                         new KeyValuePair<string, string>("status", Convert.ToString(r.Status)),
+                                        new KeyValuePair<string, string>("finishTime", r.FinishTime == null ? "" : r.FinishTime.Value.ToString("yyyy-MM-dd H:mm:ss")),
                                     });
                                     var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
                                     response.EnsureSuccessStatusCode();
@@ -847,6 +849,7 @@ namespace LiveResults.Model
                                             new KeyValuePair<string, string>("dbid", Convert.ToString(r.ID)),
                                             new KeyValuePair<string, string>("time", Convert.ToString(t.Time)),
                                             new KeyValuePair<string, string>("code", Convert.ToString(t.Control)),
+                                            new KeyValuePair<string, string>("passingTime", Convert.ToString(t.PassingTime)),
                                         });
                                         var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
                                         response.EnsureSuccessStatusCode();

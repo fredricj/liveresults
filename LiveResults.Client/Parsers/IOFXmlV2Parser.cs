@@ -166,7 +166,7 @@ namespace LiveResults.Client.Parsers
                             }
                         }
 
-                        runner.SetResult(itime, istatus);
+                        runner.SetResult(itime, istatus, null);
 
                         var lsplitCodes = new List<int>();
                         var lsplitTimes = new List<int>();
@@ -194,7 +194,7 @@ namespace LiveResults.Client.Parsers
                                         {
                                             //Målstämpling
                                             itime = ParseTime(sSplittime);
-                                            runner.SetResult(itime, 0);
+                                            runner.SetResult(itime, 0, null);
                                         }
                                     }
                                     else
@@ -209,7 +209,7 @@ namespace LiveResults.Client.Parsers
                                         lsplitCodes.Add(iSplitcode);
                                         lsplitTimes.Add(iSplittime);
 
-                                        runner.SetSplitTime(iSplitcode, iSplittime);
+                                        runner.SetSplitTime(iSplitcode, iSplittime, DateTime.MinValue);
                                     }
                                 }
                             }

@@ -20,8 +20,8 @@ namespace LiveResults.Model
         void RemoveRunner(Runner r);
         void SetRadioControl(string className, int code, string controlName, int order);
         bool IsRunnerAdded(int runnerID);
-        void SetRunnerResult(int runnerID, int time, int status);
-        void SetRunnerSplit(int runnerID, int controlcode, int time);
+        void SetRunnerResult(int runnerID, int time, int status, DateTime? passingTime);
+        void SetRunnerSplit(int runnerID, int controlcode, int time, DateTime passingTime);
         void SetRunnerStartTime(int runnerID, int starttime);
         void MergeRadioControls(RadioControl[] radios);
         void MergeRunners(Runner[] runners);
