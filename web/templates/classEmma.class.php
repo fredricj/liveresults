@@ -84,17 +84,19 @@ class Emma
 	}
 	
 	
-	public static function CreateCompetition($name, $org, $date): int
+	public static function CreateCompetition($name, $org, $date, $email, $password): int
 	{
 		$conn = self::openConnection();
-		$result = $conn->execute_query("insert into competition(user,passhash,compName,organizer,compDate,public) values(?,?,?,?,?,0)", [md5($name . $org . $date), md5("liveresultat"), $name, $org, $date]) or die(mysqli_error($conn));
+		$password_hash = password_hash($password, PASSWORD_DEFAULT);
+		$result = $conn->execute_query("insert into competition(user,passhash,compName,organizer,compDate,public) values(?,?,?,?,?,0)", [$email, $password_hash, $name, $org, $date]) or die(mysqli_error($conn));
 		return $conn->insert_id;
 	}
 	
 	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country): int
 	{
 		$conn = self::openConnection();
-		$conn->execute_query("insert into competition(user,passhash,compName,organizer,compDate,public, country) values(?,?,?,?,?,0,?)", [$email, md5($password), $name, $org, $date, $country]) or die(mysqli_error($conn));
+		$password_hash = password_hash($password, PASSWORD_DEFAULT);
+		$conn->execute_query("insert into competition(user,passhash,compName,organizer,compDate,public, country) values(?,?,?,?,?,0,?)", [$email, $password_hash, $name, $org, $date, $country]) or die(mysqli_error($conn));
 		return $conn->insert_id;	}
 	
 	
@@ -162,6 +164,19 @@ class Emma
 					$this->m_MultiDayParent = $tmp['multidayparent'];
 				}
 			}
+		}
+	}
+	
+	public static function validLoginForComp(int $compid, string $email, string $password): bool
+	{
+		$conn = self::openConnection();
+		$result = $conn->execute_query("SELECT user, passhash FROM competition WHERE tavid=?", [$compid]);
+		if ($row = $result->fetch_assoc()) {
+			$corr =  (int)hash_equals($email, $row["user"]);
+			$corr &= (int)password_verify($password, $row["passhash"]);
+			return (bool)$corr;
+		} else {
+			return false;
 		}
 	}
 	
