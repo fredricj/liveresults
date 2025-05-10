@@ -84,28 +84,30 @@ class Emma
 	}
 	
 	
-	public static function CreateCompetition($name, $org, $date): int
+	public static function CreateCompetition($name, $org, $date, $email, $password): int
 	{
 		$conn = self::openConnection();
+		$password_hash = password_hash($password, PASSWORD_DEFAULT);
 		$res = mysqli_query($conn, "select max(tavid)+1 from login");
 		list($id) = mysqli_fetch_row($res);
 		if ($id < 10000) {
 			$id = 10000;
 		}
-		$conn->execute_query("insert into login(tavid,user,pass,compName,organizer,compDate,public) values(?,?,?,?,?,?,0)", [$id, md5($name . $org . $date), md5("liveresultat"), $name, $org, $date]) or die(mysqli_error($conn));
+		$result = $conn->execute_query("insert into login (tavid,user,pass,compName,organizer,compDate,public) values(?,?,?,?,?,?,0)", [$id, $email, $password_hash, $name, $org, $date]) or die(mysqli_error($conn));
+		return $conn->insert_id;
 	}
 	
 	public static function CreateCompetitionFull($name, $org, $date, $email, $password, $country): int
 	{
 		$conn = self::openConnection();
+		$password_hash = password_hash($password, PASSWORD_DEFAULT);
 		$res = mysqli_query($conn, "select max(tavid)+1 from login");
 		list($id) = mysqli_fetch_row($res);
 		if ($id < 10000) {
 			$id = 10000;
 		}
-		mysqli_query($conn, "insert into login(tavid,user,pass,compName,organizer,compDate,public, country) values(?,?,?,?,?,?,0,?)", [$id, $email, md5($password), $name, $org, $date, $country]) or die(mysqli_error($conn));
-		return $id;
-	}
+		$conn->execute_query("insert into login (tavid, user,pass,compName,organizer,compDate,public, country) values(?,?,?,?,?,?,0,?)", [$id, $email, $password_hash, $name, $org, $date, $country]) or die(mysqli_error($conn));
+		return $conn->insert_id;	}
 	
 	
 	public static function AddRadioControl($compid, $classname, $name, $code): void
@@ -172,6 +174,19 @@ class Emma
 					$this->m_MultiDayParent = $tmp['multidayparent'];
 				}
 			}
+		}
+	}
+	
+	public static function validLoginForComp(int $compid, string $email, string $password): bool
+	{
+		$conn = self::openConnection();
+		$result = $conn->execute_query("SELECT user, pass FROM login WHERE tavid=?", [$compid]);
+		if ($row = $result->fetch_assoc()) {
+			$corr =  (int)hash_equals($email, $row["user"]);
+			$corr &= (int)password_verify($password, $row["pass"]);
+			return (bool)$corr;
+		} else {
+			return false;
 		}
 	}
 	
