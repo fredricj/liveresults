@@ -27,121 +27,110 @@ $br = $pretty ? "\n" : "";
 ///Method returns all competitions available
 if ($_GET['method'] == 'getcompetitions') {
 	$comps = Emma::GetCompetitions();
-	echo("{ \"competitions\": [$br");
-	$first = true;
+	$out = [];
 	foreach ($comps as $comp) {
-		if (!$first)
-			echo(",");
-		echo("{\"id\": ".$comp["tavid"].", \"name\": \"".$comp["compName"]."\", \"organizer\": \"".$comp["organizer"]."\", \"date\": \"".date("Y-m-d", strtotime($comp['compDate']))."\"");
-		
-		echo(", \"timediff\": ".$comp["timediff"]);
-		if ($comp["multidaystage"] != "") {
-			echo(", \"multidaystage\": ".$comp["multidaystage"].", \"multidayfirstday\": ".$comp["multidayparent"]);
-		}
-		
-		
-		echo("}$br");
-		$first = false;
+		$c = [
+			"id" => $comp["tavid"],
+			"name" => $comp["compName"],
+			"organizer" => $comp["organizer"],
+			"date" => date("Y-m-d", strtotime($comp['compDate'])),
+			"timediff" => $comp["timediff"]
+		];		if ($comp["multidaystage"] != "") {
+			$c["multidaystage"] = $comp["multidaystage"];
+			$c["multidayfirstday"] = $comp["multidayparent"];		}
+		$out[] = $c;
 	}
-	echo("]}");
+	echo json_encode(["competitions" => $out], JSON_THROW_ON_ERROR);
 } else if ($_GET['method'] == 'setcompetitioninfo') {
 	$compid = $_POST['comp'];
 	Emma::UpdateCompetition($compid, $_POST["compName"], $_POST["organizer"], $_POST["date"], $_POST["public"], $_POST["timediff"]);
 	echo("{\"status\": \"OK\"");
 } else if ($_GET['method'] == 'createcompetition') {
 	$data = json_decode($HTTP_RAW_POST_DATA);
-	if (!isset($data->name))
+	if (!isset($data->name)) {
 		echo("{\"status\": \"Error\", \"message\": \"name not set\"}");
-	if (!isset($data->organizer))
+	} elseif (!isset($data->organizer)) {
 		echo("{\"status\": \"Error\", \"message\": \"organizer not set\"}");
-	if (!isset($data->date))
+	} elseif (!isset($data->date)) {
 		echo("{\"status\": \"Error\", \"message\": \"date not set\"}");
-	if (!isset($data->country))
+	} elseif (!isset($data->country)) {
 		echo("{\"status\": \"Error\", \"message\": \"country not set\"}");
-	if (!isset($data->email))
+	} elseif (!isset($data->email)) {
 		echo("{\"status\": \"Error\", \"message\": \"email not set\"}");
-	if (!isset($data->password))
+	} elseif (!isset($data->password)) {
 		echo("{\"status\": \"Error\", \"message\": \"password not set\"}");
-	
-	$id = Emma::CreateCompetitionFull($data->name, $data->organizer, $data->date, $data->email, $data->password, $data->country);
-	
-	if ($id > 0) {
-		echo("{\"status\": \"OK\", \"competitionid\": ".$id." }");
 	} else {
-		echo("{\"status\": \"Error\", \"message\": \"Error adding competition\" }");
+		$id = Emma::CreateCompetitionFull($data->name, $data->organizer, $data->date, $data->email, $data->password, $data->country);
+		if ($id > 0) {
+			echo("{\"status\": \"OK\", \"competitionid\": ".$id." }");
+		} else {
+			echo("{\"status\": \"Error\", \"message\": \"Error adding competition\" }");
+		}
 	}
 } else if ($_GET['method'] == 'getcompetitioninfo') {
 	$compid = $_GET['comp'];
 	$comp = Emma::GetCompetition($compid);
 	if (isset($comp["tavid"])) {
-		echo("{\"id\": ".$comp["tavid"].", \"name\": \"".$comp["compName"]."\", \"organizer\": \"".$comp["organizer"]."\", \"date\": \"".date("Y-m-d", strtotime($comp['compDate']))."\"");
-		
-		echo(", \"timediff\": ".$comp["timediff"]);
-		echo(", \"timezone\": \"".$comp["timezone"]."\"");
-		echo(", \"isPublic\": ".(isset($comp["public"]) ? $comp["public"] : false));
+		$c = [
+			"id" => $comp["tavid"],
+			"name" => $comp["compName"],
+			"organizer" => $comp["organizer"],
+			"date" => date("Y-m-d", strtotime($comp['compDate'])),
+			"timediff" => $comp["timediff"],
+			"timezone" => $comp["timezone"] ?? "",
+			"isPublic" => ($comp["public"] ?? false)
+		];
 		if ($comp["multidaystage"] != "") {
-			echo(", \"multidaystage\": ".$comp["multidaystage"].", \"multidayfirstday\": ".$comp["multidayparent"]);
+			$c["multidaystage"] = $comp["multidaystage"];
+			$c["multidayfirstday"] = $comp["multidayparent"];
 		}
-		
-		echo("}");
+		echo json_encode($c, JSON_THROW_ON_ERROR);
 	} else {
 		echo("{\"id\": ".$_GET["comp"]."}");
 	}
 } elseif ($_GET['method'] == 'getlastpassings') {
-	
 	$currentComp = new Emma($_GET['comp']);
 	$lastPassings = $currentComp->getLastPassings(5);
-	
-	$first = true;
-	$ret = "";
+	$passings = [];
 	foreach ($lastPassings as $pass) {
-		if (!$first)
-			$ret .= ",$br";
-		$ret .= "{\"passtime\": \"".date("H:i:s", strtotime($pass['Changed']))."\",
-					\"runnerName\": \"".$pass['Name']."\",
-					\"class\": \"".$pass['class']."\",
-					\"control\": ".$pass['Control'].",
-					\"controlName\" : \"".$pass['pname']."\",
-					\"time\": \"".formatTime($pass['Time'], $pass['Status'], $RunnerStatus)."\" }";
-		$first = false;
+		$p = [
+			"passtime" => date("H:i:s", strtotime($pass['Changed'])),
+			"runnerName" => $pass['Name'],
+			"class" => $pass['class'],
+			"control" => $pass['Control'],
+			"controlName" => $pass['pname'] ?? "",
+			"time" => formatTime($pass['Time'], $pass['Status'], $RunnerStatus)
+		];
+		$passings[] = $p;
 	}
-	
+	$ret = json_encode($passings, JSON_THROW_ON_ERROR);
 	$hash = MD5($ret);
 	if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 		echo("{ \"status\": \"NOT MODIFIED\"}");
 	} else {
-		echo("{ \"status\": \"OK\", $br\"passings\" : [$br$ret$br],$br \"hash\": \"$hash\"}");
+		echo json_encode(["status" => "OK", "passings" => $passings, "hash" => $hash], JSON_THROW_ON_ERROR);
 	}
 } elseif ($_GET['method'] == 'getclasses') {
-	
 	$currentComp = new Emma($_GET['comp']);
 	$classes = $currentComp->Classes();
-	$ret = "";
-	$first = true;
-	
+	$out = [];
 	foreach ($classes as $class) {
-		if (!$first)
-			$ret .= ",$br";
-		$ret .= "{\"className\": \"".$class['Class']."\"}";
-		$first = false;
+		$out[] = [
+			"className" => $class['Class']
+		];
 	}
-	
-	$hash = MD5($ret);
-	
+	$hash = MD5(json_encode($out, JSON_THROW_ON_ERROR));
 	if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 		echo("{ \"status\": \"NOT MODIFIED\"}");
 	} else {
-		echo("{ \"status\": \"OK\", \"classes\" : [$br$ret$br]");
-		echo(",$br \"hash\": \"".$hash."\"}");
+		echo json_encode(["status" => "OK", "classes" => $out, "hash" => $hash]);
 	}
-	
 } elseif ($_GET['method'] == 'getclubresults') {
 	$currentComp = new Emma($_GET['comp']);
 	$club = $_GET['club'];
 	$results = $currentComp->getClubResults($_GET['comp'], $club);
-	$ret = "";
+	$ret = [];
 	$unformattedTimes = false;
-	$first = true;
 	
 	if (isset($_GET['unformattedTimes']) && $_GET['unformattedTimes'] == "true") {
 		$unformattedTimes = true;
@@ -163,7 +152,6 @@ if ($_GET['method'] == 'getcompetitions') {
 		}
 		
 		$timeplus = $res['TimePlus'];
-		
 		$age = time() - strtotime($res['Changed']);
 		$modified = $age < 120 ? 1 : 0;
 		
@@ -172,53 +160,48 @@ if ($_GET['method'] == 'getcompetitions') {
 			$timeplus = "+".formatTime($timeplus, $res['Status'], $RunnerStatus);
 			
 		}
+		//FIXME
+		$r = [
+			"place" => $cp,
+			"name" => $res['Name'],
+			"club" => $res['Club'],
+			"class" => $res['Class'],
+			"result" => $time,
+			"status" => $status,
+			"timeplus" => $timeplus,
+			"start" => $res["start"] ?? ""
+		];
 		
-		if (!$first)
-			$ret .= ",$br";
-		
-		$ret .= "{\"place\": \"$cp\", \"name\": \"".$res['Name']."\", \"club\": \"".$res['Club']."\",\"class\": \"".$res['Class']."\", \"result\": \"".$time."\",\"status\" : ".$status.", \"timeplus\": \"$timeplus\"";
-		
-		
-		if (isset($res["start"])) {
-			$ret .= ",$br \"start\": ".$res["start"];
-		} else {
-			$ret .= ",$br \"start\": \"\"";
-		}
 		
 		if ($modified) {
-			$ret .= ",$br \"DT_RowClass\": \"new_result\"";
+			$r["DT_RowClass"] = "new_result";
 		}
-		
-		$ret .= "$br}";
-		
-		$first = false;
+		$ret[] = $r;
 	}
 	
-	$hash = MD5($ret);
+	$hash = MD5(json_encode($ret, JSON_THROW_ON_ERROR));
 	if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 		echo("{ \"status\": \"NOT MODIFIED\"}");
 	} else {
-		echo("{ \"status\": \"OK\",$br \"clubName\": \"".$club."\", $br\"results\": [$br$ret$br]");
-		echo(", $br \"hash\": \"".$hash."\"}");
+		echo json_encode(["status" => "OK", "clubName" => $club, "results" => $ret, "hash" => $hash], JSON_THROW_ON_ERROR);
 	}
 } elseif ($_GET['method'] == 'getsplitcontrols') {
 	$currentComp = new Emma($_GET['comp']);
 	$splits = $currentComp->getAllSplitControls();
-	$splitJSON = "[$br";
-	$first = true;
+	$sp = [];
 	foreach ($splits as $split) {
-		if (!$first)
-			$splitJSON .= ",$br";
-		$splitJSON .= "{ \"class\": ".$split['className'].", \"code\": ".$split['code'].", \"name\": \"".$split['name']."\", \"order\": \"".$split['corder']."\"}";
-		$first = false;
+		$sp[] = [
+			"class" => $split['className'],
+			"code" => $split['code'],
+			"name" => $split['name'],
+			"order" => $split['corder']
+		];
 	}
-	$splitJSON .= "$br]";
-	$hash = MD5($splitJSON);
+	$hash = MD5(json_encode($sp, JSON_THROW_ON_ERROR));
 	if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 		echo("{ \"status\": \"NOT MODIFIED\"}");
 	} else {
-		echo("{ \"status\": \"OK\",$br \"splitcontrols\": $splitJSON");
-		echo(",$br \"hash\": \"".$hash."\"}");
+		echo json_encode(["status" => "OK", "splitcontrols" => $sp, "hash" => $hash], JSON_THROW_ON_ERROR);
 	}
 } elseif ($_GET['method'] == 'getclassresults') {
 	$class = $_GET['class'];
@@ -243,7 +226,7 @@ if ($_GET['method'] == 'getcompetitions') {
 	}
 	
 	
-	$ret = "";
+	$ret = [];
 	$first = true;
 	$place = 1;
 	$lastTime = -9999;
@@ -256,12 +239,13 @@ if ($_GET['method'] == 'getcompetitions') {
 	if (isset($_GET['unformattedTimes']) && $_GET['unformattedTimes'] == "true") {
 		$unformattedTimes = true;
 	}
-	
-	$splitJSON = "[$br";
+	$sp = [];
 	foreach ($splits as $split) {
-		if (!$first)
-			$splitJSON .= ",$br";
-		$splitJSON .= "{ \"code\": ".$split['code'].", \"name\": \"".$split['name']."\"}";
+		$splitJSON .= "{ \"code\": " . $split['code'] . ", \"name\": \"" . $split['name'] . "\"}";
+		$sp[] = [
+			"code" => $split['code'],
+			"name" => $split['name']
+		];
 		$first = false;
 		usort($results, function ($a, $b) use ($split) {
 			if (!isset($a[$split['code']."_time"]) && isset($b[$split['code']."_time"])) {
@@ -316,19 +300,16 @@ if ($_GET['method'] == 'getcompetitions') {
 				if (isset($res[$split['code']."_time"]))
 					$cursplittime = $res[$split['code']."_time"];
 			} else {
-				$results[$key][$split['code']."_place"] = "\"-\"";
+				$results[$key][$split['code']."_place"] = "-";
 			}
 		}
 	}
 	
 	usort($results, "sortByResult");
-	$splitJSON .= "$br]";
 	
 	$first = true;
 	$firstNonQualifierSet = false;
 	foreach ($results as $res) {
-		if (!$first)
-			$ret .= ",";
 		$time = $res['Time'];
 		
 		if ($first)
@@ -380,76 +361,73 @@ if ($_GET['method'] == 'getcompetitions') {
 			
 		}
 		
-		$tot = "";
-		if ($retTotal) {
-			$tot = ", \"totalresult\": ".($res['totaltime']).", \"totalstatus\": ".$res['totalstatus'].", \"totalplace\": \"".$res['totalplace']."\", \"totalplus\": ".($res['totalplus']);
-		}
-		
-		
 		if ($resultsAsArray) {
-			$ret .= "[\"$cp\", \"".$res['Name']."\",$br \"".str_replace("\"", "'", $res['Club'])."\",$br ".$res['Time'].",$br ".$status.",$br ".($time - $winnerTime).",$modified]";
+			$ret[] = [$cp, $res['Name'], str_replace("\"", "'", $res['Club']), $res['Time'], $status, ($time - $winnerTime),$modified];
 		} else {
-			$ret .= "{\"place\": \"$cp\",$br \"name\": \"".$res['Name']."\",$br \"club\": \"".str_replace("\"", "'", $res['Club'])."\",$br \"result\": \"".$time."\",$br \"status\" : ".$status.",$br \"timeplus\": \"$timeplus\",$br \"progress\": $progress $tot";
-			
+			$re = [
+				"place" => "$cp",
+				"name" => $res['Name'],
+				"club" => str_replace("\"", "'", $res['Club']),
+				"result" => $time,
+				"status" => $status,
+				"timeplus" => $timeplus,
+				"progress" => $progress,
+				"start" => $res["start"] ?? ""
+			];
+			if ($retTotal) {
+				$re["totalresult"] = $res['totaltime'];
+				$re["totalstatus"] = $res['totalstatus'];
+				$re["totalplace"] = $res['totalplace'];
+				$re["totalplus"] = $res['totalplus'];
+			}
 			if (count($splits) > 0) {
-				$ret .= ",$br \"splits\": {";
-				$firstspl = true;
+				$this_sp = [];
 				foreach ($splits as $split) {
-					if (!$firstspl)
-						$ret .= ",$br";
 					if (isset($res[$split['code']."_time"])) {
 						$splitStatus = $status;
 						if ($status == 9 || $status == 10)
 							$splitStatus = 0;
 						
-						$ret .= "\"".$split['code']."\": ".$res[$split['code']."_time"].",\"".$split['code']."_status\": ".$splitStatus.",\"".$split['code']."_place\": ".$res[$split['code']."_place"].",\"".$split['code']."_timeplus\": ".$res[$split['code']."_timeplus"];
-						$spage = time() - strtotime($res[$split['code'].'_changed']);
+						$this_sp[$split['code']] = $res[$split['code']."_time"];
+						$this_sp[$split['code']."_status"] = $splitStatus;
+						$this_sp[$split['code']."_place"] = $res[$split['code']."_place"];
+						$this_sp[$split['code']."_timeplus"] = $res[$split['code']."_timeplus"];
+						$spage = time() - strtotime($res[$split['code'] . '_changed']);
 						if ($spage < 120)
 							$modified = true;
 					} else {
-						$ret .= "\"".$split['code']."\": \"\",\"".$split['code']."_status\": 1,\"".$split['code']."_place\": \"\"";
+						$this_sp[$split['code']] = "";
+						$this_sp[$split['code']."_status"] = 1;
+						$this_sp[$split['code']."_place"] = "";
 					}
-					
-					$firstspl = false;
 				}
-				
-				$ret .= "}";
+				$re["splits"] = $this_sp;
 			}
 			
-			if (isset($res["start"])) {
-				$ret .= ",$br \"start\": ".$res["start"];
-			} else {
-				$ret .= ",$br \"start\": \"\"";
-			}
 			
 			$rowClass = "";
 			if ($modified) {
 				$rowClass = "new_result";
-				$ret .= ",$br \"DT_RowClass\": \"new_result\"";
+				$re["DT_RowClass"] = "new_result";
 			}
 			
 			if (strlen($rowClass) > 0) {
-				$ret .= ",$br \"DT_RowClass\": \"$rowClass\"";
+				$re["DT_RowClass"] = $rowClass;
 			}
 			
 			
-			$ret .= "$br}";
+			$ret[] = $re;
 		}
 		$first = false;
 		$place++;
 		$lastTime = $time;
 	}
 	
-	$hash = MD5($ret);
+	$hash = MD5(json_encode($ret, JSON_THROW_ON_ERROR));
 	if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 		echo("{ \"status\": \"NOT MODIFIED\"}");
 	} else {
-		echo("{ \"status\": \"OK\",$br \"className\": \"".$class."\",$br \"splitcontrols\": $splitJSON,$br \"results\": [$br$ret$br]");
-		if ($_GET['comp'] == "11838" || $_GET['comp'] == "12096" || $_GET['comp'] == "12793" || $_GET['comp'] == "12998") {
-			echo(",$br \"IsMassStartRace\": true");
-		}
-		
-		echo(",$br \"hash\": \"".$hash."\"}");
+		echo json_encode(["status" => "OK", "className" => $class, "splitcontrols" => $sp, "results" => $ret, "hash" => $hash]);
 	}
 } else {
 	http_response_code(400);
