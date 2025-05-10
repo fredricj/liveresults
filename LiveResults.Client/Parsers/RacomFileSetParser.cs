@@ -161,11 +161,11 @@ namespace LiveResults.Client.Parsers
                         {
                             var passTime = DateTime.ParseExact(time, "HH:mm:ss.ffff", CultureInfo.InvariantCulture);
                             var asTime = passTime.Hour*360000 + passTime.Minute*6000 + passTime.Second*100 + passTime.Millisecond/10;
-                            runner.SetResult(asTime - runner.StartTime, rstatus);
+                            runner.SetResult(asTime - runner.StartTime, rstatus, null);
                         }
                         else
                         {
-                            runner.SetResult(rtime, rstatus);
+                            runner.SetResult(rtime, rstatus, null);
                         }
                     }
                 }
@@ -206,7 +206,7 @@ namespace LiveResults.Client.Parsers
                         var asTime = passTime.Hour * 360000 + passTime.Minute * 6000 + passTime.Second * 100 + passTime.Millisecond / 10;
 
                         if (code == finishCode)
-                            runner.SetResult(asTime - runner.StartTime, (runner.Status == 9) ? 0  : runner.Status);
+                            runner.SetResult(asTime - runner.StartTime, (runner.Status == 9) ? 0  : runner.Status, null);
                         else
                         {
                             if (!siSplitPunches.ContainsKey(si))
@@ -234,7 +234,7 @@ namespace LiveResults.Client.Parsers
                         {
                             splitCodeCounter.Add(codeTimeHolder.Code, 1);
                         }
-                        r.SetSplitTime(splitCodeCounter[codeTimeHolder.Code]*1000 + codeTimeHolder.Code, codeTimeHolder.Time);
+                        r.SetSplitTime(splitCodeCounter[codeTimeHolder.Code]*1000 + codeTimeHolder.Code, codeTimeHolder.Time, DateTime.MinValue);
 
                         splitCodeCounter[codeTimeHolder.Code]++;
                     }
@@ -309,7 +309,7 @@ namespace LiveResults.Client.Parsers
 
                         var startTime = zeroTime.AddSeconds(parseTime(start));
                         r.SetStartTime(startTime.Hour * 360000 + startTime.Minute * 6000 + startTime.Second * 100 + startTime.Millisecond / 10);
-                        r.SetResult(-9, 9);
+                        r.SetResult(-9, 9, null);
 
                         ret.Add(r);
                         if (!siToRunner.ContainsKey(int.Parse(sinr)))
@@ -384,7 +384,7 @@ namespace LiveResults.Client.Parsers
 
                     var startTime = zeroTime.AddSeconds(parseTime(start));
                     r.SetStartTime(startTime.Hour * 360000 + startTime.Minute * 6000 + startTime.Second * 100 + startTime.Millisecond / 10);
-                    r.SetResult(-9, 9);
+                    r.SetResult(-9, 9, null);
 
                     ret.Add(r);
                     if (!siToRunner.ContainsKey(int.Parse(sinr)))

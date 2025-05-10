@@ -54,11 +54,11 @@ try {
             if ($_POST["finishTime"] === "") {
                 $_POST["finishTime"] = null;
             }
-            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], 1000, $_POST["status"]);
+            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], 1000, $_POST["status"], $_POST["finishTime"]);
         } elseif ($method === 'updaterunnerstarttime') {
-            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["starttime"], 100, $_POST["status"]);
+            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["starttime"], 100, $_POST["status"], null);
         } elseif ($method === 'updaterunnersplittimes') {
-            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], $_POST["code"], 0);
+            Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], $_POST["code"], 0, $_POST["passingTime"]);
         } else {
             http_response_code(400);
             echo("{ \"status\": \"ERR\", \"message\": \"No method given\"}");

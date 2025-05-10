@@ -125,6 +125,7 @@ namespace LiveResults.Model
         private int m_start;
         private int m_time;
         private int m_status;
+        private DateTime? m_finishTime;
         private string m_sourceId;
 
         public bool RunnerUpdated;
@@ -181,6 +182,18 @@ namespace LiveResults.Model
             set
             {
                 m_bib = value;
+            }
+        }
+
+        public DateTime? FinishTime
+        {
+            get
+            {
+                return m_finishTime;
+            }
+            set
+            {
+                m_finishTime = value;
             }
         }
 
@@ -285,7 +298,7 @@ namespace LiveResults.Model
             return !(m_splitTimes.ContainsKey(controlCode) && m_splitTimes[controlCode].Time == time);
         }
 
-        public void SetSplitTime(int controlCode, int time)
+        public void SetSplitTime(int controlCode, int time, DateTime passingTime)
         {
             if (HasSplitChanged(controlCode, time))
             {
@@ -294,6 +307,7 @@ namespace LiveResults.Model
                     SplitTime t = m_splitTimes[controlCode];
                     t.Time = time;
                     t.Updated = true;
+                    t.PassingTime = passingTime;
                 }
                 else
                 {
@@ -301,6 +315,7 @@ namespace LiveResults.Model
                     t.Control = controlCode;
                     t.Time = time;
                     t.Updated = true;
+                    t.PassingTime = passingTime;
                     m_splitTimes.Add(controlCode, t);
                 }
 
@@ -312,12 +327,13 @@ namespace LiveResults.Model
             return m_time != time || m_status != status;
         }
 
-        public void SetResult(int time, int status)
+        public void SetResult(int time, int status, DateTime? passingTime)
         {
             if (HasResultChanged(time,status))
             {
                 m_time = time;
                 m_status = status;
+                m_finishTime = passingTime;
                 ResultUpdated = true;
             }
         }
@@ -360,5 +376,6 @@ namespace LiveResults.Model
         public int Control;
         public int Time;
         public bool Updated;
+        public DateTime PassingTime;
     }
 }

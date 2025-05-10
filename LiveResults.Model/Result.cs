@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace LiveResults.Model
 {
@@ -15,6 +16,7 @@ namespace LiveResults.Model
         public int Time { get; set; }
         public int Status { get; set; }
 
+        public DateTime? PassingTime { get; set; }
         public string bib { get; set; }
         public List<ResultStruct> SplitTimes { get; set; }
     }

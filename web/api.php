@@ -1,4 +1,7 @@
 <?php
+if (PHP_SAPI === "cli") {
+	parse_str(getenv('QUERY_STRING'), $_GET);
+}
 date_default_timezone_set("Europe/Stockholm");
 $lang = "sv";
 
@@ -21,7 +24,6 @@ header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 15));
 if (!isset($_GET['method'])) {
 	$_GET['method'] = null;
 }
-
 try {
 	///Method returns all competitions available
 	if ($_GET['method'] == 'getcompetitions') {
@@ -105,7 +107,7 @@ try {
 			$passings[] = $p;
 		}
 		$ret = json_encode($passings, JSON_THROW_ON_ERROR);
-		$hash = md5($ret);
+		$hash = MD5($ret);
 		if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 			echo("{ \"status\": \"NOT MODIFIED\"}");
 		} else {
@@ -120,7 +122,7 @@ try {
 				"className" => $class['Class']
 			];
 		}
-		$hash = md5(json_encode($out, JSON_THROW_ON_ERROR));
+		$hash = MD5(json_encode($out, JSON_THROW_ON_ERROR));
 		if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 			echo("{ \"status\": \"NOT MODIFIED\"}");
 		} else {
@@ -172,13 +174,14 @@ try {
 				"start" => $res["start"] ?? ""
 			];
 			
+			
 			if ($modified) {
 				$r["DT_RowClass"] = "new_result";
 			}
 			$ret[] = $r;
 		}
 		
-		$hash = md5(json_encode($ret, JSON_THROW_ON_ERROR));
+		$hash = MD5(json_encode($ret, JSON_THROW_ON_ERROR));
 		if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 			echo("{ \"status\": \"NOT MODIFIED\"}");
 		} else {
@@ -187,20 +190,20 @@ try {
 	} elseif ($_GET['method'] == 'getsplitcontrols') {
 		$currentComp = new Emma($_GET['comp']);
 		$splits = $currentComp->getAllSplitControls();
-		$sp = [];
+		$splitcontrols = [];
 		foreach ($splits as $split) {
-			$sp[] = [
+			$splitcontrols[] = [
 				"class" => $split['className'],
 				"code" => $split['code'],
 				"name" => $split['name'],
 				"order" => $split['corder']
 			];
 		}
-		$hash = md5(json_encode($sp, JSON_THROW_ON_ERROR));
+		$hash = MD5(json_encode($splitcontrols, JSON_THROW_ON_ERROR));
 		if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 			echo("{ \"status\": \"NOT MODIFIED\"}");
 		} else {
-			echo json_encode(["status" => "OK", "splitcontrols" => $sp, "hash" => $hash], JSON_THROW_ON_ERROR);
+			echo json_encode(["status" => "OK", "splitcontrols" => $splitcontrols, "hash" => $hash], JSON_THROW_ON_ERROR);
 		}
 	} elseif ($_GET['method'] == 'getclassresults') {
 		$class = $_GET['class'];
@@ -223,7 +226,6 @@ try {
 		}
 		
 		$ret = [];
-		$first = true;
 		$place = 1;
 		$lastTime = -9999;
 		$winnerTime = 0;
@@ -235,13 +237,12 @@ try {
 		if (isset($_GET['unformattedTimes']) && $_GET['unformattedTimes'] == "true") {
 			$unformattedTimes = true;
 		}
-		$sp = [];
+		$splitcontrols = [];
 		foreach ($splits as $split) {
-			$sp[] = [
+			$splitcontrols[] = [
 				"code" => $split['code'],
 				"name" => $split['name']
 			];
-			$first = false;
 			usort($results, function ($a, $b) use ($split) {
 				if (!isset($a[$split['code']."_time"]) && isset($b[$split['code']."_time"])) {
 					return 1;
@@ -319,9 +320,7 @@ try {
 			if ($status == 9 || $status == 10) {
 				$cp = "";
 				
-				if (count($splits) == 0) {
-					$progress = 0;
-				} else {
+				if (count($splits) != 0) {
 					$passedSplits = 0;
 					$splitCnt = 0;
 					foreach ($splits as $split) {
@@ -340,7 +339,6 @@ try {
 			}
 			
 			$timeplus = "";
-			
 			if ($time > 0 && $status == 0) {
 				$timeplus = $time - $winnerTime;
 				$progress = 100;
@@ -352,7 +350,6 @@ try {
 			if (!$unformattedTimes) {
 				$time = formatTime($res['Time'], $res['Status'], $RunnerStatus);
 				$timeplus = "+".formatTime($timeplus, $res['Status'], $RunnerStatus);
-				
 			}
 			
 			if ($resultsAsArray) {
@@ -386,6 +383,7 @@ try {
 							$this_sp[$split['code']."_status"] = $splitStatus;
 							$this_sp[$split['code']."_place"] = $res[$split['code']."_place"];
 							$this_sp[$split['code']."_timeplus"] = $res[$split['code']."_timeplus"];
+							$this_sp[$split['code']."_passingtime"] = $res[$split['code']."_passing"];
 							$spage = time() - strtotime($res[$split['code'].'_changed']);
 							if ($spage < 120)
 								$modified = true;
@@ -407,7 +405,6 @@ try {
 				if (strlen($rowClass) > 0) {
 					$re["DT_RowClass"] = $rowClass;
 				}
-				
 				$ret[] = $re;
 			}
 			$first = false;
@@ -415,11 +412,11 @@ try {
 			$lastTime = $time;
 		}
 		
-		$hash = md5(json_encode($ret, JSON_THROW_ON_ERROR));
+		$hash = MD5(json_encode($ret, JSON_THROW_ON_ERROR));
 		if (isset($_GET['last_hash']) && $_GET['last_hash'] == $hash) {
 			echo("{ \"status\": \"NOT MODIFIED\"}");
 		} else {
-			echo json_encode(["status" => "OK", "className" => $class, "splitcontrols" => $sp, "results" => $ret, "hash" => $hash]);
+			echo json_encode(["status" => "OK", "className" => $class, "splitcontrols" => $splitcontrols, "results" => $ret, "hash" => $hash]);
 		}
 	} else {
 		http_response_code(400);
@@ -428,6 +425,9 @@ try {
 } catch (JsonException $e) {
 	http_response_code(500);
 	error_log("Failed to JSON encode response: ".$e->getMessage());
+} catch (Exception $e) {
+	http_response_code(500);
+	error_log("Failed to get result: ".$e->getMessage()."\n".$e->getTraceAsString());
 }
 
 function sortByResult($a, $b)
@@ -445,25 +445,42 @@ function sortByResult($a, $b)
 
 
 function formatTime($time, $status, &$RunnerStatus)
+
 {
+	
 	global $lang;
+	
 	if ($status != "0") {
+		
 		return $RunnerStatus[$status]; //$status;
+		
 	}
+	
 	if ($lang == "fi") {
+		
 		$hours = floor($time / 360000);
+		
 		$minutes = floor(($time - $hours * 360000) / 6000);
+		
 		$seconds = floor(($time - $hours * 360000 - $minutes * 6000) / 100);
+		
 		if ($hours > 0) {
 			return $hours.":".str_pad("".$minutes, 2, "0", STR_PAD_LEFT).":".str_pad("".$seconds, 2, "0", STR_PAD_LEFT);
 		} else {
 			return $minutes.":".str_pad("".$seconds, 2, "0", STR_PAD_LEFT);
 		}
+		
 	} else {
+		
+		
 		$minutes = floor($time / 6000);
+		
 		$seconds = floor(($time - $minutes * 6000) / 100);
+		
 		return str_pad("".$minutes, 2, "0", STR_PAD_LEFT).":".str_pad("".$seconds, 2, "0", STR_PAD_LEFT);
+		
 	}
+	
 }
 
 function urlRawDecode($raw_url_encoded)
@@ -510,3 +527,4 @@ function urlRawDecode($raw_url_encoded)
 	# Return decoded  raw url encoded data
 	return rawurldecode($raw_url_encoded);
 }
+
