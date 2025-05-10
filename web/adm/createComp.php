@@ -2,8 +2,13 @@
 include_once("../templates/classEmma.class.php");
 
 if (isset($_POST['btnSubmit'])) {
-	Emma::CreateCompetition($_POST['name'], $_POST['org'], $_POST['date']);
-	header("Location: admincompetitions.php");
+    session_start();
+	$competition_id = Emma::CreateCompetition($_POST['name'], $_POST['org'], $_POST['date'], $_POST['email'], $_POST['password']);
+    if (!array_key_exists("competitions", $_SESSION)) {
+        $_SESSION["competitions"] = [];
+	}
+    $_SESSION['competitions'][$competition_id] = 1;
+	header("Location: editComp.php?compid=".$competition_id);
 	exit;
 }
 
@@ -81,6 +86,10 @@ header('Content-Type: text/html; charset='.$CHARSET);
                                 <input type="text" name="org" size="15"><br>
                                 <b>Date (format yyyy-mm-dd)</b><br>
                                 <input type="text" name="date" size="15"> (ex. 2008-02-03)<br>
+                                <b>Email</b><br>
+                                <input type="text" name="email" size="30">Used as username to administer the competition<br>
+                                <b>Password</b><br>
+                                <input type="password" name="password" size="30">Used to administer the competition<br>
                                 <input type="submit" name="btnSubmit" value="Create">
                             </form>
                         </td>

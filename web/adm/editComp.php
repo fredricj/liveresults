@@ -1,6 +1,10 @@
 <?php
 include_once("../templates/classEmma.class.php");
-
+session_start();
+if (!array_key_exists("competitions", $_SESSION) || !array_key_exists($_GET['compid'], $_SESSION["competitions"])) {
+    header("location: loginComp.php?compid=".$_GET["compid"]."&returnto=".urlencode("editComp.php?compid=".$_GET["compid"]));
+    exit();
+}
 if (isset($_POST['btnSave'])) {
 	Emma::UpdateCompetition($_GET['compid'], $_POST['name'], $_POST['org'], $_POST['date'], $_POST['public'], $_POST['timediff']);
 } else if (isset($_POST['btnAdd'])) {
