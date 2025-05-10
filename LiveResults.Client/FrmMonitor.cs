@@ -60,14 +60,14 @@ namespace LiveResults.Client
 
                 if (newResult.Time != -2)
                 {
-                    client.SetRunnerResult(newResult.ID, newResult.Time, newResult.Status);
+                    client.SetRunnerResult(newResult.ID, newResult.Time, newResult.Status, null);
                 }
 
                 if (newResult.SplitTimes != null)
                 {
                     foreach (ResultStruct str in newResult.SplitTimes)
                     {
-                        client.SetRunnerSplit(newResult.ID, str.ControlCode, str.Time);
+                        client.SetRunnerSplit(newResult.ID, str.ControlCode, str.Time, str.PassingTime);
                     }
                 }
             }

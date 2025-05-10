@@ -61,7 +61,7 @@ namespace LiveResults.Client.Model
        
         private readonly Dictionary<string,Dictionary<string,TeamHolder>> m_cache = new Dictionary<string, Dictionary<string, TeamHolder>>();
 
-        public void SetTeamLegSplitResult(int dbId, string className, string teamName,string bib, string runnerName, int leg, int startTime, int controlCode, int time, int passCounter)
+        public void SetTeamLegSplitResult(int dbId, string className, string teamName,string bib, string runnerName, int leg, int startTime, int controlCode, int time, int passCounter, DateTime passingTime)
         {
             if (!m_cache.ContainsKey(className))
             {

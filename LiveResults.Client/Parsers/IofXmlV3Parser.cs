@@ -67,7 +67,7 @@ namespace LiveResults.Client.Parsers
                                     }
                                     else
                                     {
-                                        runner.SetResult(-9, 9);
+                                        runner.SetResult(-9, 9, null);
                                     }
 
                                     runners.Add(runner);
@@ -340,7 +340,7 @@ namespace LiveResults.Client.Parsers
                     break;
             }
 
-            runner.SetResult(itime, istatus);
+            runner.SetResult(itime, istatus, null);
         }
 
         private static void FixKraemerTimeFormat(ref string time)
@@ -381,7 +381,7 @@ namespace LiveResults.Client.Parsers
                                 {
                                     FixKraemerTimeFormat(ref time);
                                     var itime = (int)(Convert.ToDouble(time, CultureInfo.InvariantCulture) * 100);
-                                    runner.SetResult(itime, 0);
+                                    runner.SetResult(itime, 0, null);
                                 }
                             }
                         }
@@ -400,7 +400,7 @@ namespace LiveResults.Client.Parsers
                                 lsplitCodes.Add(iSplitcode);
                                 lsplitTimes.Add(iSplittime);
 
-                                runner.SetSplitTime(iSplitcode, iSplittime);
+                                runner.SetSplitTime(iSplitcode, iSplittime, DateTime.MinValue);
                             }
                         }
                     }

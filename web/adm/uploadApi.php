@@ -40,11 +40,11 @@ if ($_GET['method'] === 'getcompetitionresultdata') {
 } elseif ($_POST['method'] === 'updaterunner') {
 	Emma::UpdateRunner($_POST["comp"], $_POST["name"], $_POST["club"], $_POST["classname"], $_POST["dbid"], $_POST["sourceid"], $_POST["bib"] ?? null);
 } elseif ($_POST['method'] === 'updaterunnerresults') {
-	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], 1000, $_POST["status"]);
+	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], 1000, $_POST["status"], $_POST["passingTime"]);
 } elseif ($_POST['method'] === 'updaterunnerstarttime') {
-	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["starttime"], 100, $_POST["status"]);
+	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["starttime"], 100, $_POST["status"], null);
 } elseif ($_POST['method'] === 'updaterunnersplittimes') {
-	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], $_POST["code"], 0);
+	Emma::UpdateRunnerResults($_POST["comp"], $_POST["dbid"], $_POST["time"], $_POST["code"], 0, $_POST["passingTime"]);
 } else {
 	http_response_code(400);
 	echo("{ \"status\": \"ERR\", \"message\": \"No method given\"}");
