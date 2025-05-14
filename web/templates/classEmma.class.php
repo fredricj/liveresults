@@ -62,7 +62,7 @@ class Emma
 	public static function GetRadioControls($compid): array
 	{
 		$conn = self::openConnection();
-		$result = $conn->execute_query("select * from splitcontrols where tavid=? order by corder", [$compid]);
+		$result = $conn->execute_query("select * from splitcontrols where tavid=? order by classname, corder", [$compid]);
 		$ret = array();
 		while ($tmp = mysqli_fetch_array($result)) {
 			$ret[] = $tmp;
@@ -75,6 +75,14 @@ class Emma
 	{
 		$conn = self::openConnection();
 		$conn->execute_query("delete from splitcontrols where tavid=? and code=? and classname=?", [$compid, $code, $classname]);
+	}
+	
+	public static function DeleteRadioControl($compid, $classname, $corder, $code, $cname): void
+	{
+		$conn = self::openConnection();
+		$q = "DELETE FROM splitcontrols
+       			WHERE tavid = ? and classname = ? and corder = ? and code = ? and name = ?";
+		$conn->execute_query($q, [$compid, $classname, $corder, $code, $cname]);
 	}
 	
 	public static function DelAllRadioControls($compid): void
@@ -109,6 +117,30 @@ class Emma
 		$conn->execute_query("insert into login (tavid, user,pass,compName,organizer,compDate,public, country) values(?,?,?,?,?,?,0,?)", [$id, $email, $password_hash, $name, $org, $date, $country]) or die(mysqli_error($conn));
 		return $conn->insert_id;	}
 	
+	public function GetCompetitionRunnerAliases(): array
+	{
+		$res = $this->m_Conn->execute_query("select sourceid,id from runneraliases where compid = ?", [$this->m_CompId]);
+		$out = [];
+		while ($row = $res->fetch_assoc()) {
+			$out[] = $row;
+		}
+		return $out;
+	}
+	
+	public function GetCompetitionResults(): array
+	{
+		$q = "SELECT runners.dbid,control,time,name,club,class as classname,status,bib
+				FROM runners
+				JOIN results USING (dbid, tavid)
+				WHERE results.tavid = ?";
+		$res = $this->m_Conn->execute_query($q, [$this->m_CompId]);
+		$rows = [];
+		while ($row = $res->fetch_assoc()) {
+			$rows[] = $row;
+		}
+		return $rows;
+	}
+	
 	
 	public static function AddRadioControl($compid, $classname, $name, $code): void
 	{
@@ -116,6 +148,13 @@ class Emma
 		$res = $conn->execute_query("select count(*)+1 from splitcontrols where classname=? and tavid=?", [$classname, $compid]);
 		list($id) = mysqli_fetch_row($res);
 		$conn->execute_query( "insert into splitcontrols(tavid,classname,name,code,corder) values(?, ?, ?, ?, ?)", [$compid, $classname, $name, $code, $id]) or die(mysqli_error($conn));
+	}
+	
+	public static function UpdateRadioControl($compid, $classname, $name, $code, $corder): void
+	{
+		$conn = self::openConnection();
+		$q = "REPLACE INTO splitcontrols(tavid,classname,corder,code,name) VALUES (?,?,?,?,?)";
+		$conn->execute_query($q, [$compid, $classname, $corder, $code, $name]);
 	}
 	
 	public static function UpdateCompetition($id, $name, $org, $date, $public, $timediff): void
@@ -253,7 +292,7 @@ class Emma
 		$ret = array();
 		$result = $this->m_Conn->execute_query("SELECT code, name, classname, corder from splitcontrols where tavid = ? order by corder", [$this->m_CompId]);
 		if ($result) {
-			while ($tmp = mysqli_fetch_array($result)) {
+			while ($tmp = mysqli_fetch_assoc($result)) {
 				$ret[] = $tmp;
 			}
 			mysqli_free_result($result);
@@ -520,4 +559,45 @@ class Emma
 		}
 		return $ret;
 	}
+	
+	public static function DeleteRunner(int $compid, int $dbid): bool
+	{
+		$conn = self::openConnection();
+		$conn->begin_transaction();
+		try {
+			$conn->execute_query("delete from results where tavid= ? and dbid = ?", [$compid, $dbid]);
+			$conn->execute_query("delete from runners where tavid= ? and dbid = ?", [$compid, $dbid]);
+			$conn->execute_query("delete from runneraliases where compid= ? and id = ?", [$compid, $dbid]);
+			$conn->commit();
+			return true;
+		} catch (mysqli_sql_exception) {
+			$conn->rollback();
+			return false;
+		}
+	}
+	
+	public static function UpdateRunner(int $compid, string $name, string $club, string $classname, string $dbid, ?string $sourceid, ?string $bib): void
+	{
+		$conn = self::openConnection();
+		$conn->begin_transaction();
+		try {
+			$q = "REPLACE INTO runners (tavid,name,club,class,brick,dbid,bib) VALUES (?,?,?,?,0,?,?)";
+			$conn->execute_query($q, [$compid, $name, $club, $classname, $dbid, $bib == "" ? null : $bib]);
+			if ($sourceid !== "") {
+				$q = "REPLACE INTO runneraliases (compid,sourceid,id) VALUES (?,?,?)";
+				$conn->execute_query($q, [$compid, $sourceid, $dbid]);
+			}
+			$conn->commit();
+		} catch (mysqli_sql_exception $e) {
+			$conn->rollback();
+		}
+	}
+	
+	public static function UpdateRunnerResults(int $compid, int $dbid, string $time, int $code, int $status): void
+	{
+		$conn = self::openConnection();
+		$q = "REPLACE INTO results (tavid,dbid,control,time,status,changed) VALUES(?,?,?,?,?,Now())";
+		$conn->execute_query($q, [$compid, $dbid, $code, $time, $status]);
+	}
+	
 }
