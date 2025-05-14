@@ -15,7 +15,7 @@ namespace LiveResults.Client
 {
     public partial class OEForm : Form
     {
-        readonly List<EmmaMysqlClient> m_clients;
+        readonly List<IEmmaClient> m_clients;
         OSParser m_osParser;
         OEParser m_oeParser;
 
@@ -48,7 +48,7 @@ namespace LiveResults.Client
             InitializeComponent();
             Text = Text + @", " + Encoding.Default.EncodingName + @"," + Encoding.Default.CodePage;
             fileSystemWatcher1.Changed += new FileSystemEventHandler(fileSystemWatcher1_Changed);
-            m_clients = new List<EmmaMysqlClient>();
+            m_clients = new List<IEmmaClient>();
 
             m_supportedFormats.Add(new FormatItem("IOF-XML", "Export files in IOF-XML (version 2 supported)", Format.Iofxml));
             if (showCSVFormats)
@@ -107,7 +107,7 @@ namespace LiveResults.Client
 
             if (m_clients != null)
             {
-                foreach (EmmaMysqlClient c in m_clients)
+                foreach (IEmmaClient c in m_clients)
                 {
                     c.Stop();
                 }
@@ -125,7 +125,7 @@ namespace LiveResults.Client
 
         private int m_parsedZeroTime = 0;
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
             if (!Directory.Exists(txtOEDirectory.Text))
             {
@@ -201,7 +201,16 @@ namespace LiveResults.Client
                 var client = new EmmaMysqlClient(server.Host, 3306, server.User, server.Pw, server.DB, m_compid, useInternalIDAllocation);
 
                 client.OnLogMessage += client_OnLogMessage;
-                client.Start();
+                await client.Start();
+                m_clients.Add(client);
+            }
+            EmmaApiClient.EmmaApiServer[] apiservers = EmmaApiClient.GetServersFromConfig();
+            foreach (EmmaApiClient.EmmaApiServer server in apiservers)
+            {
+                var client = new EmmaApiClient(server.Host, m_compid, useInternalIDAllocation);
+
+                client.OnLogMessage += client_OnLogMessage;
+                await client.Start();
                 m_clients.Add(client);
             }
 #if _CASPARCG_
@@ -214,7 +223,7 @@ namespace LiveResults.Client
 
         void m_OSParser_OnResult(Result newResult)
         {
-            foreach (EmmaMysqlClient c in m_clients)
+            foreach (IEmmaClient c in m_clients)
             {
                 if (!c.IsRunnerAdded(newResult.ID))
                 {
