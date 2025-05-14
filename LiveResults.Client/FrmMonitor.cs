@@ -11,7 +11,7 @@ namespace LiveResults.Client
     public partial class FrmMonitor : Form
     {
         IExternalSystemResultParser m_Parser;
-        List<EmmaMysqlClient> m_Clients = new List<EmmaMysqlClient>();
+        List<IEmmaClient> m_Clients = new List<IEmmaClient>();
 
 #if _CASPARCG_
         private CasparClient.CasparControlFrm casparForm = null;
@@ -38,7 +38,7 @@ namespace LiveResults.Client
             m_Parser.OnResult += new ResultDelegate(m_Parser_OnResult);
             m_Parser.OnRadioControl += (name, code, className, order) =>
             {
-                foreach (EmmaMysqlClient client in m_Clients)
+                foreach (IEmmaClient client in m_Clients)
                 {
                     client.SetRadioControl(className, code, name, order);
                 }
@@ -47,7 +47,7 @@ namespace LiveResults.Client
 
         void m_Parser_OnResult(Result newResult)
         {
-            foreach (EmmaMysqlClient client in m_Clients)
+            foreach (IEmmaClient client in m_Clients)
             {
                 if (!client.IsRunnerAdded(newResult.ID))
                     client.AddRunner(new Runner(newResult.ID, newResult.RunnerName, newResult.RunnerClub, newResult.Class,null,newResult.bib));
@@ -90,7 +90,7 @@ namespace LiveResults.Client
             }
         }
 
-        private void btnStartSTop_Click(object sender, EventArgs e)
+        private async void btnStartSTop_Click(object sender, EventArgs e)
         {
             if (btnStartSTop.Text == "Start")
             {
@@ -101,7 +101,16 @@ namespace LiveResults.Client
                     EmmaMysqlClient cli = new EmmaMysqlClient(srv.Host, 3309, srv.User, srv.Pw, srv.DB, m_CompetitionID);
                     m_Clients.Add(cli);
                     cli.OnLogMessage += new LogMessageDelegate(cli_OnLogMessage);
-                    cli.Start();
+                    await cli.Start();
+                }
+                EmmaApiClient.EmmaApiServer[] apiServers = EmmaApiClient.GetServersFromConfig();
+
+                foreach (EmmaApiClient.EmmaApiServer srv in apiServers)
+                {
+                    EmmaApiClient cli = new EmmaApiClient(srv.Host, m_CompetitionID);
+                    m_Clients.Add(cli);
+                    cli.OnLogMessage += new LogMessageDelegate(cli_OnLogMessage);
+                    await cli.Start();
                 }
                 m_Parser.Start();
                 btnStartSTop.Text = "Stop";
@@ -113,7 +122,7 @@ namespace LiveResults.Client
             }
             else
             {
-                foreach (EmmaMysqlClient cli in m_Clients)
+                foreach (IEmmaClient cli in m_Clients)
                 {
                     cli.Stop();
                 }

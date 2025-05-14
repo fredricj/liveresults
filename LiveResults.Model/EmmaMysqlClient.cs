@@ -11,10 +11,7 @@ using System.Linq;
 
 namespace LiveResults.Model
 {
-    public delegate void LogMessageDelegate(string msg);
-
-   
-    public class EmmaMysqlClient : IDisposable
+    public class EmmaMysqlClient : IDisposable, IEmmaClient
     {
         public delegate void ResultChangedDelegate(Runner runner, int position);
         public event ResultChangedDelegate ResultChanged;
@@ -223,7 +220,7 @@ namespace LiveResults.Model
         private bool m_continue;
         private bool m_currentlyBuffering;
         private Thread m_mainTh;
-        public void Start()
+        public async System.Threading.Tasks.Task Start()
         {
             FireLogMsg("Buffering existing results..");
             int numRunners = 0;
@@ -291,7 +288,7 @@ namespace LiveResults.Model
                 }
 
 
-                
+
 
                 cmd.CommandText = "select runners.dbid,control,time,name,club,class,status,bib from runners, results where results.dbid = runners.dbid and results.tavid = " + m_compID + " and runners.tavid = " + m_compID;
                 reader = cmd.ExecuteReader();
@@ -323,7 +320,7 @@ namespace LiveResults.Model
                             SetRunnerSplit(dbid, control, time);
                             break;
                     }
-                    
+
                 }
                 reader.Close();
 
@@ -737,7 +734,7 @@ namespace LiveResults.Model
             m_continue = false;
         }
 
-        private void Run()
+        private async void Run()
         {
             bool runOffline = ConfigurationManager.AppSettings["runoffline"] == "true";
             while (m_continue)
@@ -851,7 +848,7 @@ namespace LiveResults.Model
 
                                         cmd.Parameters.AddWithValue("?id", r.ID);
                                         cmd.CommandText = "REPLACE INTO runners (tavid,name,club,class,brick,dbid,bib) VALUES (?compid,?name,?club,?class,0,?id,?bib)";
-                                       
+
 
                                         try
                                         {
