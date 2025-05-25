@@ -383,6 +383,7 @@ try {
 							$this_sp[$split['code']."_status"] = $splitStatus;
 							$this_sp[$split['code']."_place"] = $res[$split['code']."_place"];
 							$this_sp[$split['code']."_timeplus"] = $res[$split['code']."_timeplus"];
+							$this_sp[$split['code']."_passingtime"] = $res[$split['code']."_passing"];
 							$spage = time() - strtotime($res[$split['code'].'_changed']);
 							if ($spage < 120)
 								$modified = true;
@@ -424,6 +425,9 @@ try {
 } catch (JsonException $e) {
 	http_response_code(500);
 	error_log("Failed to JSON encode response: ".$e->getMessage());
+} catch (Exception $e) {
+	http_response_code(500);
+	error_log("Failed to get result: ".$e->getMessage()."\n".$e->getTraceAsString());
 }
 
 function sortByResult($a, $b)
