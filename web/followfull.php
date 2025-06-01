@@ -1,4 +1,5 @@
 <?php
+require_once(__DIR__."/templates/lang_functions.php");
 date_default_timezone_set("Europe/Stockholm");
 $lang = "sv";
 
@@ -219,33 +220,7 @@ echo("<?xml version=\"1.0\" encoding=\"$CHARSET\" ?>\n");
 								<?php } ?>
 								<?php if (!$isSingleClass && !$isSingleClub) { ?>
                                     <div id="langchooser">
-                                        | <?php echo($lang == "sv" ? "<img src='images/se.png' alt='Svenska'> Svenska" :
-											"<a href=\"?lang=sv&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/se.png' alt='Svenska'> Svenska</a>") ?>
-                                        | <?php echo($lang == "en" ? "<img src='images/en.png' alt='English'> English" :
-											"<a href=\"?lang=en&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/en.png' alt='English'> English</a>") ?>
-                                        | <?php echo($lang == "fi" ? "<img src='images/fi.png' alt='Suomeksi'> Suomeksi" :
-											"<a href=\"?lang=fi&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/fi.png'  alt='Suomeksi'> Suomeksi</a>") ?>
-                                        | <?php echo($lang == "ru" ? "<img src='images/ru.png' alt='Русский'> Русский" :
-											"<a href=\"?lang=ru&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/ru.png' alt='Русский'> Русский</a>") ?>
-                                        | <?php echo($lang == "cz" ? "<img src='images/cz.png' alt='Česky'> Česky" :
-											"<a href=\"?lang=cz&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/cz.png' alt='Česky'> Česky</a>") ?>
-                                        | <?php echo($lang == "de" ? "<img src='images/de.png' alt='Deutsch'> Deutsch" :
-											"<a href=\"?lang=de&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/de.png' alt='Deutsch'> Deutsch</a>") ?>
-                                        | <?php echo($lang == "bg" ? "<img src='images/bg.png' alt='български'> български" :
-											"<a href=\"?lang=bg&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/bg.png' alt='български'> български</a>") ?>
-                                        | <?php echo($lang == "fr" ? "<img src='images/fr.png' alt='Français'> Français" :
-											"<a href=\"?lang=fr&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/fr.png' alt='Français'> Français</a>") ?>
-                                        | <?php echo($lang == "it" ? "<img src='images/it.png' border='0' alt='Italiano'> Italiano" :
-											"<a href=\"?lang=it&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/it.png' border='0' alt='Italiano'> Italiano</a>") ?>
-                                        | <?php echo($lang == "hu" ? "<img src='images/hu.png' border='0' alt='Magyar'> Magyar" :
-											"<a href=\"?lang=hu&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/hu.png' border='0' alt='Magyar'> Magyar</a>") ?>
-                                        | <?php echo($lang == "es" ? "<img src='images/es.png' border='0' alt='Español'> Español" :
-											"<a href=\"?lang=es&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/es.png' border='0' alt='Español'> Español</a>") ?>
-                                        | <?php echo($lang == "pl" ? "<img src='images/pl.png' border='0' alt='Polska'> Polska" :
-											"<a href=\"?lang=pl&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/pl.png' border='0' alt='Polska'> Polska</a>") ?>
-                                        | <?php echo($lang == "pt" ? "<img src='images/pt.png?a' border='0' alt='Português'> Português" :
-											"<a href=\"?lang=pt&amp;comp=".$_GET['comp']."\" style='text-decoration: none'><img src='images/pt.png?a' border='0' alt='Português'> Português</a>") ?>
-                                        |
+	                                    <?=get_language_chooser("?comp=".$_GET["comp"], $lang)?>
                                     </div>
 								<?php } ?>
 								<?php if ($showLastPassings) { ?>
