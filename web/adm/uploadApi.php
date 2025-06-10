@@ -12,6 +12,53 @@ header('cache-control: max-age=15');
 header('pragma: public');
 header('Expires: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 15));
 
+
+// Login to competition
+if (isset($_POST['method']) && $_POST['method'] === 'authenticate') {
+    if (!isset($_POST['compid']) || !isset($_POST['user']) || !isset($_POST['password'])) {
+        http_response_code(400);
+        exit();
+    }
+    $is_valid = Emma::validLoginForComp($_POST["compid"], $_POST["user"], $_POST["password"]);
+    if ($is_valid) {
+        session_start();
+        $session_id = session_id();
+        $_SESSION["competition"] = $_POST["compid"];
+        echo json_encode(["status" => "OK", "session_id" => $session_id]);
+    } else {
+        http_response_code(401);
+        echo("{ \"status\": \"ERR\", \"message\": \"Invalid credentials for competition {$_POST["compid"]}\"}");
+    }
+    exit();
+}
+
+if (!array_key_exists('HTTP_APISESSIONID', $_SERVER)) {
+    http_response_code(401);
+    echo("{ \"status\": \"ERR\", \"message\": \"missing auth header\"}");
+    exit();
+} else {
+    $session_id = $_SERVER['HTTP_APISESSIONID'];
+    if (!is_string($session_id)) {
+        http_response_code(401);
+        exit();
+    }
+    session_id($session_id);
+    session_start();
+    $comp = null;
+    if (isset($_POST['comp'])) {
+        $comp = $_POST["comp"];
+    } else if (isset($_GET['comp'])) {
+        $comp = $_GET['comp'];
+    } else {
+        http_response_code(400);
+        exit();
+    }
+    if (!isset($_SESSION["competition"]) || $_SESSION["competition"] !== $comp) {
+        http_response_code(401);
+        exit();
+    }
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] === "GET") {
         $method = $_GET["method"];
@@ -19,7 +66,11 @@ try {
             http_response_code(400);
             exit();
         }
-        if ($method === 'getcompetitionresultdata') {
+        if ($method === 'validate') {
+            // Already validated return 200
+            http_response_code(200);
+            exit();
+        } elseif ($method === 'getcompetitionresultdata') {
             $currentComp = new Emma($_GET['comp']);
             $splitcontrols = $currentComp->getAllSplitControls();
             // Since an empty array becomes an array instead of dict
@@ -40,7 +91,11 @@ try {
             http_response_code(400);
             exit();
         }
-        if ($method === 'updateradiocontrol') {
+        if ($method === 'validate') {
+            // Already validated return 200
+            http_response_code(200);
+            exit();
+        } elseif ($method === 'updateradiocontrol') {
             Emma::UpdateRadioControl($_POST["comp"], $_POST["classname"], $_POST["cname"], $_POST["code"], $_POST["corder"]);
             echo json_encode("{\"status\": \"OK\"}");
         } elseif ($method === 'deleteradiocontrol') {
