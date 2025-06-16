@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LiveResults.Model
 {
@@ -27,6 +23,7 @@ namespace LiveResults.Model
         void MergeRunners(Runner[] runners);
         void UpdateCurrentResultsFromNewSet(Runner[] runners);
         void Stop();
+        bool SetCompetitionCredentials(string username, string password);
 
     }
 }

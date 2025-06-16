@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Globalization;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -107,6 +108,10 @@ namespace LiveResults.Model
 
         public event LogMessageDelegate OnLogMessage;
         private int m_compID;
+        private string m_user;
+        private string m_password;
+        private string m_sessionID;
+
         private readonly Dictionary<int, Runner> m_runners;
         private readonly Dictionary<string, RadioControl[]> m_classRadioControls;
         private readonly List<DbItem> m_itemsToUpdate;
@@ -130,6 +135,13 @@ namespace LiveResults.Model
         public void SetCompetitionId(int compId)
         {
             m_compID = compId;
+        }
+
+        public bool SetCompetitionCredentials(string user,  string password)
+        {
+            m_user = user;
+            m_password = password;
+            return true;
         }
 
         private void ResetUpdated()
@@ -201,6 +213,43 @@ namespace LiveResults.Model
             return m_runners.Values.Where(x => x.Class == className).ToArray();
         }
 
+        public async Task<bool> ServerLogin()
+        {
+            var formContent = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("method", "authenticate"),
+                new KeyValuePair<string, string>("comp", Convert.ToString(m_compID)),
+                new KeyValuePair<string, string>("user", m_user),
+                new KeyValuePair<string, string>("password", m_password),
+            });
+            HttpResponseMessage response = await m_httpClient.PostAsync("adm/uploadApi.php", formContent);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            // Deserialize the JSON into the C# object
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            LoginResponse res = JsonSerializer.Deserialize<LoginResponse>(responseBody, options);
+            if (res.Status == "OK")
+            {
+                m_sessionID = res.Session_id;
+                return true;
+            }
+            return false;
+        }
+
+        public Task<bool> ServerLogin(string username, string password)
+        {
+            SetCompetitionCredentials(username, password);
+            return ServerLogin();
+        }
+
+        public bool ServerSessionOK()
+        {
+            return false;
+        }
+
         private bool m_continue;
         private bool m_currentlyBuffering;
         private Task m_mainTask;
@@ -210,6 +259,11 @@ namespace LiveResults.Model
             FireLogMsg("Buffering existing results..");
             int numRunners = 0;
             int numResults = 0;
+            var sessionOK = ServerSessionOK();
+            if (!sessionOK)
+            {
+                await ServerLogin();
+            }
             try
             {
                 m_currentlyBuffering = true;
@@ -219,15 +273,21 @@ namespace LiveResults.Model
                     m_compsSourceToIdMapping.Add(m_compID, new Dictionary<string, int>());
                     m_compsNextGeneratedId.Add(m_compID, -1);
                 }
-                HttpResponseMessage response = await m_httpClient.GetAsync("adm/uploadApi.php?comp=" + m_compID + "&method=getcompetitionresultdata");
-                response.EnsureSuccessStatusCode();
-                string responseBody = await response.Content.ReadAsStringAsync();
-                // Deserialize the JSON into the C# object
-                var options = new JsonSerializerOptions
+                CompetitionData res;
+                using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, "adm/uploadApi.php?comp=" + m_compID + "&method=getcompetitionresultdata"))
                 {
-                    PropertyNameCaseInsensitive = true
-                };
-                CompetitionData res = JsonSerializer.Deserialize<CompetitionData>(responseBody, options);
+                    requestMessage.Headers.Add("APISESSIONID", m_sessionID);
+
+                    HttpResponseMessage response = await m_httpClient.SendAsync(requestMessage);
+                    response.EnsureSuccessStatusCode();
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    // Deserialize the JSON into the C# object
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    res = JsonSerializer.Deserialize<CompetitionData>(responseBody, options);
+                }
 
                 #region splitcontrols
                 Dictionary<string, List<RadioControl>> tmpRadios = new Dictionary<string, List<RadioControl>>();
@@ -708,6 +768,7 @@ namespace LiveResults.Model
                                     new KeyValuePair<string, string>("code", Convert.ToString(r.Code)),
                                     new KeyValuePair<string, string>("cname", r.ControlName),
                                 });
+                                formContent.Headers.Add("APISESSIONID", m_sessionID);
 
                                 try
                                 {
@@ -736,6 +797,7 @@ namespace LiveResults.Model
                                     new KeyValuePair<string, string>("code", Convert.ToString(r.Code)),
                                     new KeyValuePair<string, string>("cname", r.ControlName),
                                 });
+                                formContent.Headers.Add("APISESSIONID", m_sessionID);
                                 try
                                 {
                                     var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
@@ -759,6 +821,7 @@ namespace LiveResults.Model
                                     new KeyValuePair<string, string>("comp", Convert.ToString(m_compID)),
                                     new KeyValuePair<string, string>("dbid", Convert.ToString(r)),
                                 });
+                                formContent.Headers.Add("APISESSIONID", m_sessionID);
                                 try
                                 {
                                     var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
@@ -788,6 +851,7 @@ namespace LiveResults.Model
                                         new KeyValuePair<string, string>("sourceid", Convert.ToString(r.SourceId)),
                                         new KeyValuePair<string, string>("bib", r.Bib != null ? Convert.ToString(r.Bib) : null),
                                     });
+                                    formContent.Headers.Add("APISESSIONID", m_sessionID);
 
                                     try
                                     {
@@ -817,6 +881,7 @@ namespace LiveResults.Model
                                         new KeyValuePair<string, string>("status", Convert.ToString(r.Status)),
                                         new KeyValuePair<string, string>("finishTime", r.FinishTime == null ? "" : r.FinishTime.Value.ToString("yyyy-MM-dd H:mm:ss")),
                                     });
+                                    formContent.Headers.Add("APISESSIONID", m_sessionID);
                                     var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
                                     response.EnsureSuccessStatusCode();
                                     FireLogMsg("Runner " + r.Name + "s result updated in DB");
@@ -832,6 +897,7 @@ namespace LiveResults.Model
                                         new KeyValuePair<string, string>("starttime", Convert.ToString(r.StartTime)),
                                         new KeyValuePair<string, string>("status", Convert.ToString(r.Status)),
                                     });
+                                    formContent.Headers.Add("APISESSIONID", m_sessionID);
                                     var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
                                     response.EnsureSuccessStatusCode();
                                     FireLogMsg("Runner " + r.Name + "s starttime updated in DB");
@@ -851,6 +917,7 @@ namespace LiveResults.Model
                                             new KeyValuePair<string, string>("code", Convert.ToString(t.Control)),
                                             new KeyValuePair<string, string>("passingTime", Convert.ToString(t.PassingTime)),
                                         });
+                                        formContent.Headers.Add("APISESSIONID", m_sessionID);
                                         var response = await m_httpClient.PostAsync("/adm/uploadApi.php", formContent);
                                         response.EnsureSuccessStatusCode();
                                         t.Updated = false;
@@ -891,5 +958,12 @@ namespace LiveResults.Model
         }
 
         #endregion
+    }
+
+    class LoginResponse
+    {
+        public string Status { get; set; }
+        public string Session_id { get; set; }
+        public string Message { get; set; }
     }
 }

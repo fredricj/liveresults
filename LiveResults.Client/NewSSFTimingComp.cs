@@ -277,6 +277,7 @@ namespace LiveResults.Client
                 (cmbOLAComp.SelectedItem as OlaComp).Id, chkCreateRadioControls.Checked, chkAnoSplits.Checked);
             monForm.SetParser(pars as IExternalSystemResultParser);
             monForm.CompetitionID = Convert.ToInt32(txtCompID.Text);
+            monForm.SetCompetitionCredentials(txtCompUsername.Text, txtCompPassword.Text);
             monForm.ShowDialog(this);
         }
     }

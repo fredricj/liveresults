@@ -983,6 +983,11 @@ namespace LiveResults.Model
             }
         }
 
+        public bool SetCompetitionCredentials(string username, string password)
+        {
+            return false;
+        }
+
         public override string ToString()
         {
             return (m_connection != null ? m_connection.DataSource : "Detached") + " (" + UpdatesPending + ")";

@@ -24,10 +24,10 @@ if (isset($_POST['method']) && $_POST['method'] === 'authenticate') {
         session_start();
         $session_id = session_id();
         $_SESSION["competition"] = $_POST["compid"];
-        echo json_encode(["status" => "OK", "session_id" => $session_id]);
+        echo json_encode(["status" => "OK", "session_id" => $session_id, "message" => ""]);
     } else {
         http_response_code(401);
-        echo("{ \"status\": \"ERR\", \"message\": \"Invalid credentials for competition {$_POST["compid"]}\"}");
+        echo("{ \"status\": \"ERR\", \"message\": \"Invalid credentials for competition {$_POST["compid"]}\", \"session_id\": \"\"}");
     }
     exit();
 }

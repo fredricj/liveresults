@@ -37,6 +37,7 @@ namespace LiveResults.Client
                         txtRadioControls.Text = s.RadioControlFile;
                         txtRaceFile.Text = s.RaceFile;
                         txtCompID.Text = s.CompetitionID;
+                        txtCompUsername.Text = s.CompetitionUsername;
                         dtZeroTime.Value = s.zeroTime;
                         checkBox1.Checked = s.IsRelay;
                         numericUpDown1.Value = s.FinishCode;
@@ -74,6 +75,7 @@ namespace LiveResults.Client
                     StartlistFile = txtStartlist.Text,
                     UseCsvStartlist = cbStart.Checked,
                     CompetitionID = txtCompID.Text,
+                    CompetitionUsername = txtCompUsername.Text,
                     RaceFile = txtRaceFile.Text,
                     RadioControlFile = txtRadioControls.Text,
                     RawSplitsFile = txtRawSplits.Text,
@@ -102,6 +104,7 @@ namespace LiveResults.Client
             public string RawSplitsFile { get; set; }
             public string RadioControlFile { get; set; }
             public string CompetitionID { get; set; }
+            public string CompetitionUsername { get; set; }
             public bool IsRelay { get; set; }
             public int FinishCode { get; set; }
         }

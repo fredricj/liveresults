@@ -84,6 +84,7 @@ namespace LiveResults.Client
                         txtExtension.Text = s.extension;
                         txtCompID.Text = s.CompID.ToString(CultureInfo.InvariantCulture);
                         chkAutoCreateRadioControls.Checked = s.AutoCreateRadioControls;
+                        txtCompUsername.Text = s.CompUsername;
                         for (int i = 0; i < m_supportedFormats.Count; i++)
                         {
                             if (m_supportedFormats[i].Name == s.Format)
@@ -208,7 +209,7 @@ namespace LiveResults.Client
             foreach (EmmaApiClient.EmmaApiServer server in apiservers)
             {
                 var client = new EmmaApiClient(server.Host, m_compid, useInternalIDAllocation);
-
+                client.SetCompetitionCredentials(txtCompUsername.Text, txtCompPassword.Text);
                 client.OnLogMessage += client_OnLogMessage;
                 await client.Start();
                 m_clients.Add(client);
@@ -451,8 +452,8 @@ namespace LiveResults.Client
                     extension = txtExtension.Text,
                     Format = (cmbFormat.SelectedItem as FormatItem).Name,
                     ZeroTime = txtZeroTime.Text,
+                    CompUsername = txtCompUsername.Text,
                     AutoCreateRadioControls = chkAutoCreateRadioControls.Checked
-
                 };
 
                 string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EmmaClient");
@@ -479,6 +480,7 @@ namespace LiveResults.Client
             public string Format { get; set; }
             public string ZeroTime { get; set; }
             public bool AutoCreateRadioControls { get; set; }
+            public string CompUsername { get; set; }
         }
 
         private void button4_Click(object sender, EventArgs e)

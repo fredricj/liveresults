@@ -25,8 +25,6 @@ namespace LiveResults.Client
             txtPw.Text = "live";
             txtPort.Text = "3306";
             RetreiveSettings();
-           
-
         }
 
         [Serializable]
@@ -39,12 +37,8 @@ namespace LiveResults.Client
         {
             try
             {
-
-
-
                 if (File.Exists(GetSettingsFile()))
                 {
-
                     using (var ms = new MemoryStream(File.ReadAllBytes(GetSettingsFile())))
                     {
                         List<Setting> setts = new List<Setting>();
@@ -54,10 +48,8 @@ namespace LiveResults.Client
                         if (setts != null)
                         {
                         }
-
                         applyControlValues(Controls, setts);
                     }
-
                 }
             }
             catch (Exception ee)
@@ -72,6 +64,10 @@ namespace LiveResults.Client
             {
                 if (c is TextBox)
                 {
+                    if (c.Name == "txtCompPassword")
+                    {
+                        continue;
+                    }
                     string val = setts.Where(x => x.Key == c.Name).Select(x => x.Value).FirstOrDefault();
                     (c as TextBox).Text = val;
                 }
@@ -89,7 +85,6 @@ namespace LiveResults.Client
                         (c as CheckBox).Checked = val == "True";
                     }
                 }
-
                 applyControlValues(c.Controls, setts);
             }
         }
@@ -112,8 +107,6 @@ namespace LiveResults.Client
 
                 File.WriteAllBytes(GetSettingsFile(), data);
             }
-
-
         }
 
         private static string GetSettingsFile()
@@ -128,6 +121,10 @@ namespace LiveResults.Client
             {
                 if (c is TextBox)
                 {
+                    if (c.Name == "txtCompPassword")
+                    {
+                        continue;
+                    }
                     setts.Add(new Setting
                     {
                         Key = (c as TextBox).Name,
@@ -150,7 +147,6 @@ namespace LiveResults.Client
                         Value = (c as CheckBox).Checked.ToString()
                     });
                 }
-
                 extractControlValues(c.Controls, setts);
             }
         }
@@ -174,7 +170,6 @@ namespace LiveResults.Client
             IDbConnection conn = null;
             try
             {
-
                 conn = GetDBConnection();
                 conn.Open();
 
@@ -198,8 +193,6 @@ namespace LiveResults.Client
 
                 if (cmbMeosComp.Items.Count > 0)
                     cmbMeosComp.SelectedIndex = 0;
-
-
             }
             catch (Exception ee)
             {
@@ -253,7 +246,5 @@ GRANT SELECT ON Controls to live;";
             monForm.CompetitionID = Convert.ToInt32(txtCompID.Text);
             monForm.ShowDialog(this);
         }
-
-       
     }
 }

@@ -29,6 +29,9 @@ namespace LiveResults.Client
             get { return m_CompetitionID; }
             set { m_CompetitionID = value; }
         }
+        
+        private string m_compUsername;
+        private string m_compPassword;
 	
 
         public void SetParser(IExternalSystemResultParser parser)
@@ -90,6 +93,12 @@ namespace LiveResults.Client
             }
         }
 
+        public void SetCompetitionCredentials(string username, string password)
+        {
+            m_compUsername = username;
+            m_compPassword = password;
+        }
+
         private async void btnStartSTop_Click(object sender, EventArgs e)
         {
             if (btnStartSTop.Text == "Start")
@@ -108,6 +117,7 @@ namespace LiveResults.Client
                 foreach (EmmaApiClient.EmmaApiServer srv in apiServers)
                 {
                     EmmaApiClient cli = new EmmaApiClient(srv.Host, m_CompetitionID);
+                    cli.SetCompetitionCredentials(m_compUsername, m_compPassword);
                     m_Clients.Add(cli);
                     cli.OnLogMessage += new LogMessageDelegate(cli_OnLogMessage);
                     await cli.Start();

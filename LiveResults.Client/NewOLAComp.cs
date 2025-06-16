@@ -414,6 +414,7 @@ GRANT SELECT ON Controls to live;";
                 (cmbOLAEtapp.SelectedItem as OlaComp).Id, chkCreateRadioControls.Checked);
             monForm.SetParser(pars as IExternalSystemResultParser);
             monForm.CompetitionID = Convert.ToInt32(txtCompID.Text);
+            monForm.SetCompetitionCredentials(txtCompUsername.Text, txtCompPassword.Text);
             monForm.ShowDialog(this);
         }
 
