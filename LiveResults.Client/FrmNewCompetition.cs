@@ -209,16 +209,5 @@ namespace LiveResults.Client
 
           
         }
-
-        private void button5_MouseEnter(object sender, EventArgs e)
-        {
-            lblInfo.Text = "Export liveresults from MeOS";
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            NewMeosComp frm = new NewMeosComp();
-            frm.ShowDialog(this);
-        }
     }
 }
